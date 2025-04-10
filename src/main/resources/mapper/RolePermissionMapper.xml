@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- src/main/resources/mapper/RolePermissionMapper.xml -->
+<mapper namespace="com.example.tastysphere_api.mapper.RolePermissionMapper">
+    <!-- 示例：查询某角色的所有权限 ID -->
+    <select id="selectPermissionIdsByRoleId" resultType="java.lang.Long">
+        SELECT permission_id FROM role_permissions WHERE role_id = #{roleId}
+    </select>
+</mapper>

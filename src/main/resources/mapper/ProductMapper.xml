@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.tastysphere_api.mapper.ProductMapper">
+
+    <select id="selectByMerchantId" resultType="com.example.tastysphere_api.entity.Product">
+        SELECT * FROM products
+        WHERE merchant_id = #{id}
+        ORDER BY created_time DESC
+    </select>
+
+</mapper>
