@@ -8728,3 +8728,47 @@ org.springframework.web.servlet.resource.NoResourceFoundException: No static res
 	For a stable JSON structure, please use Spring Data's PagedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
 	or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
 
+2025-04-10T14:54:29.428+08:00  INFO 13196 --- [TastySphere_api] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (0 additions, 1 deletion, 0 modifications)
+2025-04-10T14:54:29.433+08:00  INFO 13196 --- [TastySphere_api] [Thread-5] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2025-04-10T14:54:29.765+08:00  INFO 13196 --- [TastySphere_api] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2025-04-10T14:54:29.784+08:00  INFO 13196 --- [TastySphere_api] [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-04-10T14:54:29.791+08:00  INFO 13196 --- [TastySphere_api] [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2025-04-10T14:54:29.869+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Starting TastySphereApiApplication using Java 17.0.14 with PID 13196 (C:\Users\123\Downloads\TastySphere_api-master\TastySphere_api-master\target\classes started by 123 in C:\Users\123\Downloads\TastySphere_api-master\TastySphere_api-master)
+2025-04-10T14:54:29.869+08:00 DEBUG 13196 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Running with Spring Boot v3.4.2, Spring v6.2.2
+2025-04-10T14:54:29.869+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : No active profile set, falling back to 1 default profile: "default"
+2025-04-10T14:54:30.259+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-04-10T14:54:30.260+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-04-10T14:54:30.271+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 9 ms. Found 0 Redis repository interfaces.
+2025-04-10T14:54:30.417+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-04-10T14:54:30.418+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-10T14:54:30.418+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2025-04-10T14:54:30.442+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-10T14:54:30.442+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 570 ms
+2025-04-10T14:54:30.749+08:00 DEBUG 13196 --- [TastySphere_api] [restartedMain] c.e.t.security.JwtAuthenticationFilter   : Filter 'jwtAuthenticationFilter' configured for use
+2025-04-10T14:54:30.749+08:00 DEBUG 13196 --- [TastySphere_api] [restartedMain] c.e.tastysphere_api.security.JWTFilter   : Filter 'JWTFilter' configured for use
+2025-04-10T14:54:30.999+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2025-04-10T14:54:31.273+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-10T14:54:31.289+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-04-10T14:54:31.293+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Started TastySphereApiApplication in 1.455 seconds (process running for 618.538)
+2025-04-10T14:54:31.295+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2025-04-10T14:54:32.753+08:00  INFO 13196 --- [TastySphere_api] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (1 addition, 0 deletions, 0 modifications)
+2025-04-10T14:54:32.754+08:00  INFO 13196 --- [TastySphere_api] [Thread-15] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2025-04-10T14:54:33.049+08:00  INFO 13196 --- [TastySphere_api] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2025-04-10T14:54:33.116+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Starting TastySphereApiApplication using Java 17.0.14 with PID 13196 (C:\Users\123\Downloads\TastySphere_api-master\TastySphere_api-master\target\classes started by 123 in C:\Users\123\Downloads\TastySphere_api-master\TastySphere_api-master)
+2025-04-10T14:54:33.116+08:00 DEBUG 13196 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Running with Spring Boot v3.4.2, Spring v6.2.2
+2025-04-10T14:54:33.116+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : No active profile set, falling back to 1 default profile: "default"
+2025-04-10T14:54:33.326+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-04-10T14:54:33.326+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-04-10T14:54:33.336+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 8 ms. Found 0 Redis repository interfaces.
+2025-04-10T14:54:33.450+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-04-10T14:54:33.450+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-10T14:54:33.451+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2025-04-10T14:54:33.471+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-10T14:54:33.471+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 353 ms
+2025-04-10T14:54:33.764+08:00 DEBUG 13196 --- [TastySphere_api] [restartedMain] c.e.t.security.JwtAuthenticationFilter   : Filter 'jwtAuthenticationFilter' configured for use
+2025-04-10T14:54:33.764+08:00 DEBUG 13196 --- [TastySphere_api] [restartedMain] c.e.tastysphere_api.security.JWTFilter   : Filter 'JWTFilter' configured for use
+2025-04-10T14:54:33.983+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2025-04-10T14:54:34.238+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-10T14:54:34.251+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-04-10T14:54:34.254+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Started TastySphereApiApplication in 1.162 seconds (process running for 621.499)
+2025-04-10T14:54:34.256+08:00  INFO 13196 --- [TastySphere_api] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
