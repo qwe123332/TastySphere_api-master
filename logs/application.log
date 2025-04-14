@@ -659,3 +659,33 @@ org.springframework.web.servlet.resource.NoResourceFoundException: No static res
 2025-04-14T10:56:31.765+08:00  INFO 2604 --- [TastySphere_api] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
 2025-04-14T10:57:29.510+08:00  INFO 2604 --- [TastySphere_api] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
 2025-04-14T10:57:29.865+08:00  INFO 2604 --- [TastySphere_api] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2025-04-14T10:57:33.865+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Starting TastySphereApiApplication using Java 17.0.14 with PID 16516 (C:\Users\123\Downloads\TastySphere_api-master\TastySphere_api-master\target\classes started by 123 in C:\Users\123\Downloads\TastySphere_api-master\TastySphere_api-master)
+2025-04-14T10:57:33.867+08:00 DEBUG 16516 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Running with Spring Boot v3.4.2, Spring v6.2.2
+2025-04-14T10:57:33.867+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : No active profile set, falling back to 1 default profile: "default"
+2025-04-14T10:57:33.912+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-14T10:57:33.912+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-14T10:57:34.628+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-04-14T10:57:34.630+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-04-14T10:57:34.662+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 19 ms. Found 0 Redis repository interfaces.
+2025-04-14T10:57:35.267+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-04-14T10:57:35.278+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-14T10:57:35.278+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2025-04-14T10:57:35.326+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-14T10:57:35.326+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1413 ms
+2025-04-14T10:57:35.626+08:00  WARN 16516 --- [TastySphere_api] [restartedMain] c.b.m.core.injector.DefaultSqlInjector   : class com.example.tastysphere_api.entity.RolePermission ,Not found @TableId annotation, Cannot use Mybatis-Plus 'xxById' Method.
+2025-04-14T10:57:35.888+08:00 DEBUG 16516 --- [TastySphere_api] [restartedMain] c.e.t.security.JwtAuthenticationFilter   : Filter 'jwtAuthenticationFilter' configured for use
+2025-04-14T10:57:35.889+08:00 DEBUG 16516 --- [TastySphere_api] [restartedMain] c.e.tastysphere_api.security.JWTFilter   : Filter 'JWTFilter' configured for use
+2025-04-14T10:57:36.489+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2025-04-14T10:57:37.073+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-14T10:57:37.108+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-04-14T10:57:37.121+08:00  INFO 16516 --- [TastySphere_api] [restartedMain] c.e.t.TastySphereApiApplication          : Started TastySphereApiApplication in 3.615 seconds (process running for 4.235)
+2025-04-14T10:57:55.682+08:00  INFO 16516 --- [TastySphere_api] [http-nio-8080-exec-4] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-14T10:57:55.683+08:00  INFO 16516 --- [TastySphere_api] [http-nio-8080-exec-4] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-14T10:57:55.684+08:00  INFO 16516 --- [TastySphere_api] [http-nio-8080-exec-4] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-04-14T10:57:55.943+08:00  INFO 16516 --- [TastySphere_api] [http-nio-8080-exec-7] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-04-14T10:57:56.094+08:00  INFO 16516 --- [TastySphere_api] [http-nio-8080-exec-7] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@7d2da98e
+2025-04-14T10:57:56.096+08:00  INFO 16516 --- [TastySphere_api] [http-nio-8080-exec-7] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-04-14T10:58:22.573+08:00  WARN 16516 --- [TastySphere_api] [http-nio-8080-exec-10] ration$PageModule$WarningLoggingModifier : Serializing PageImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
+	For a stable JSON structure, please use Spring Data's PagedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
+	or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
+
