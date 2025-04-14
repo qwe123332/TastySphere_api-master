@@ -1,14 +1,18 @@
 package com.example.tastysphere_api.service;
 
+import com.baomidou.mybatisplus.core.assist.ISqlRunner;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.tastysphere_api.dto.request.ReportReviewRequest;
 import com.example.tastysphere_api.entity.AuditLog;
 import com.example.tastysphere_api.entity.Post;
+import com.example.tastysphere_api.entity.PostReport;
 import com.example.tastysphere_api.entity.User;
 import com.example.tastysphere_api.exception.BusinessException;
 import com.example.tastysphere_api.exception.ResourceNotFoundException;
 import com.example.tastysphere_api.mapper.AuditLogMapper;
 import com.example.tastysphere_api.mapper.PostMapper;
+import com.example.tastysphere_api.mapper.PostReportMapper;
 import com.example.tastysphere_api.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +44,8 @@ public class AdminService {
 
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private PostReportMapper postReportMapper;
 
     /** 获取所有审计日志 */
     public Page<AuditLog> getAuditLogs(Page<AuditLog> page) {
@@ -181,4 +187,48 @@ public class AdminService {
     }
 
 
+    public org.springframework.data.domain.Page<PostReport> getReports(int page, int size, String status) {
+        QueryWrapper<PostReport> queryWrapper = new QueryWrapper<>();
+        if (status != null) {
+            queryWrapper.eq("status", status);
+        }
+
+        Page<PostReport> mpPage = postReportMapper.selectPage(new Page<>(page, size), queryWrapper);
+        return new PageImpl<>(mpPage.getRecords(), org.springframework.data.domain.PageRequest.of(page, size), mpPage.getTotal());
+    }
+
+    public PostReport getReportById(Long id) {
+        PostReport report = postReportMapper.selectById(id);
+        if (report == null) {
+            throw new ResourceNotFoundException("Report not found with id: " + id);
+        }
+        return report;
+    }
+
+    public void reviewReport(Long id, ReportReviewRequest request, Long id1) {
+        PostReport report = postReportMapper.selectById(id);
+        if (report == null) {
+            throw new ResourceNotFoundException("Report not found with id: " + id);
+        }
+
+        try {
+            report.setStatus(request.getStatus());
+            report.setReviewTime(LocalDateTime.now());
+            report.setAdminId(id1);
+            postReportMapper.updateById(report);
+
+            // 发送通知给举报人
+            User reporter = userMapper.selectById(report.getReporterId());
+            if (reporter != null) {
+                notificationService.sendNotification(
+                        reporter,
+                        "您的举报已被处理，状态：" + request.getStatus(),
+                        "REPORT_REVIEW"
+                );
+            }
+        } catch (Exception e) {
+            log.error("审核举报失败: {}", e.getMessage());
+            throw new BusinessException("审核操作失败: " + e.getMessage());
+        }
+    }
 }

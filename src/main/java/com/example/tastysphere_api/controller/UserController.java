@@ -9,7 +9,7 @@ import com.example.tastysphere_api.dto.PostDTO;
 import com.example.tastysphere_api.dto.NotificationDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -92,4 +92,17 @@ public class UserController {
         userService.markNotificationAsRead(notificationId, user.getUser().getId());
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/users/{blockedUserId}/block")
+    public ResponseEntity<Void> blockUser(@PathVariable Long blockedUserId){
+        userService.blockUser(blockedUserId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/users/{blockedUserId}/block")
+    public ResponseEntity<Void> unblockUser(@PathVariable Long blockedUserId){
+        userService.unblockUser(blockedUserId);
+        return ResponseEntity.ok().build();
+    }
+
 }

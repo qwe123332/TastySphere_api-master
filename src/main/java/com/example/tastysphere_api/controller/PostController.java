@@ -3,12 +3,16 @@ package com.example.tastysphere_api.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.tastysphere_api.dto.CustomUserDetails;
 import com.example.tastysphere_api.dto.PostDTO;
-import com.example.tastysphere_api.service.PostService;
-import com.example.tastysphere_api.service.RecommendationService;
+import com.example.tastysphere_api.dto.PostDraftDTO;
+import com.example.tastysphere_api.dto.ReportRequestDTO;
+import com.example.tastysphere_api.dto.response.CommonResponse;
+import com.example.tastysphere_api.service.*;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -28,6 +33,17 @@ public class PostController {
 
     @Autowired
     private RecommendationService recommendationService;
+
+    @Autowired
+    private PostReportService postReportService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private RestaurantService restaurantService;
+
+
+    @Autowired
+    private PostDraftService postDraftService;
 
     @GetMapping
     public ResponseEntity<Page<PostDTO>> getPosts(
@@ -44,12 +60,14 @@ public class PostController {
         );
         return ResponseEntity.ok(postPage);
     }
+
     @PutMapping("/{postId}/audit")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> auditPost(@PathVariable Long postId, @RequestParam boolean approved) {
         postService.auditPost(postId, approved);
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<PostDTO>> getPostsByUser(
             @PathVariable Long userId,
@@ -63,6 +81,7 @@ public class PostController {
                 PageRequest.of(page, size),
                 iPage.getTotal()
         );
+
 
         // 直接返回 Page 对象即可
         return ResponseEntity.ok(postPage);
@@ -106,23 +125,9 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<PostDTO>> searchPosts(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
 
-        PageRequest pageable = PageRequest.of(page, size);
-        IPage<PostDTO> result = postService.searchPosts(keyword, pageable);
 
-        Page<PostDTO> pageResult = new PageImpl<>(
-                result.getRecords(), // 内容
-                pageable,            // 分页信息
-                result.getTotal()    // 总条数
-        );
 
-        return ResponseEntity.ok(pageResult);
-    }
 
 
     @GetMapping("/recommended")
@@ -149,4 +154,46 @@ public class PostController {
         postService.unlikePost(postId, user.getUser());
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/{postId}/stats")
+    public ResponseEntity<Map<String, Integer>> getPostStats(@PathVariable Long postId) {
+        Map<String, Integer> stats = postService.getPostStats(postId);
+        return ResponseEntity.ok(stats);
+    }
+    @PostMapping("/report")
+    public ResponseEntity<String> reportContent(
+            @RequestBody ReportRequestDTO request,
+            @AuthenticationPrincipal CustomUserDetails user) {
+
+        postReportService.reportContent(
+                request.getPostId(),
+                request.getCommentId(),
+                user.getUser().getId(),
+                request.getReason()
+        );
+
+        return ResponseEntity.ok("举报成功，感谢你的反馈！");
+    }
+
+    @PostMapping("/drafts")
+    public ResponseEntity<PostDraftDTO> saveDraft(
+            @RequestBody PostDraftDTO draft,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(postDraftService.saveDraft(draft, user.getUser().getId()));
+    }
+
+    @GetMapping("/drafts")
+    public ResponseEntity<List<PostDraftDTO>> getMyDrafts(
+            @AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(postDraftService.getMyDrafts(user.getUser().getId()));
+    }
+
+    @DeleteMapping("/drafts/{draftId}")
+    public ResponseEntity<Void> deleteDraft(
+            @PathVariable Long draftId,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        postDraftService.deleteDraft(draftId, user.getUser().getId());
+        return ResponseEntity.ok().build();
+    }
+
 }

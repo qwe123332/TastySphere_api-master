@@ -1,8 +1,10 @@
 package com.example.tastysphere_api.controller;
 
 import com.example.tastysphere_api.dto.CustomUserDetails;
+import com.example.tastysphere_api.dto.request.ReportReviewRequest;
 import com.example.tastysphere_api.entity.AuditLog;
 import com.example.tastysphere_api.entity.Post;
+import com.example.tastysphere_api.entity.PostReport;
 import com.example.tastysphere_api.entity.User;
 import com.example.tastysphere_api.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -91,4 +94,32 @@ public class AdminController {
 
         return ResponseEntity.ok(springPage);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports")
+    public ResponseEntity<Page<PostReport>> getReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status) {
+
+        Page<PostReport> reportPage = adminService.getReports(page, size, status);
+        return ResponseEntity.ok(reportPage);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports/{id}")
+    public ResponseEntity<PostReport> getReportDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.getReportById(id));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/reports/{id}/review")
+    public ResponseEntity<Void> reviewReport(
+            @PathVariable Long id,
+            @RequestBody ReportReviewRequest request,
+            @AuthenticationPrincipal CustomUserDetails admin) {
+        adminService.reviewReport(id, request, admin.getUser().getId());
+        return ResponseEntity.ok().build();
+    }
+
 }

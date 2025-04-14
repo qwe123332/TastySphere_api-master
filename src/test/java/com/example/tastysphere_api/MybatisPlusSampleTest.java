@@ -50,6 +50,16 @@ public class MybatisPlusSampleTest {
         assertThat(users).isNotEmpty();
     }
 
+    // ✅ 按 ID 查询用户
+    @Test
+    void testUserMapper_queryById() {
+        Long userId = 1L;
+        User user = userMapper.selectById(userId);
+        System.out.println(user);
+        assertThat(user).isNotNull();
+    }
+
+
     // ✅ 插入一个新用户（用于开发测试，不推荐在生产测试类执行）
 //    @Test
 //    void testUserMapper_insert() {
@@ -121,5 +131,15 @@ public class MybatisPlusSampleTest {
         List<Post> posts = postMapper.selectList(wrapper);
         posts.forEach(System.out::println);
         assertThat(posts).isNotEmpty();
+    }
+    //getPostStats
+    @Test
+    void testPostMapper_getPostStats() {
+        Long postId = 2L;
+        Post post = postMapper.selectById(postId);
+        assertThat(post).isNotNull();
+        System.out.println("Post ID: " + post.getId());
+        System.out.println("Like Count: " + post.getLikeCount());
+        System.out.println("Comment Count: " + post.getCommentCount());
     }
 }

@@ -1,11 +1,13 @@
 package com.example.tastysphere_api.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.tastysphere_api.dto.NotificationDTO;
 import com.example.tastysphere_api.dto.PostDTO;
 import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.dto.mapper.UserDtoMapper;
+import com.example.tastysphere_api.dto.response.CommonResponse;
 import com.example.tastysphere_api.entity.User;
 import com.example.tastysphere_api.exception.ResourceNotFoundException;
 import com.example.tastysphere_api.mapper.UserMapper;
@@ -13,15 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 
 @Service
 public class UserService {
@@ -222,4 +223,55 @@ public class UserService {
     }
 
 
+    public void blockUser(Long blockedUserId) {
+
+
+
+
+
+
+
+    }
+
+    public void unblockUser(Long blockedUserId) {
+
+    }
+
+    public CommonResponse searchUsers(String keyword, int page, int pageSize) {
+        // 1. Validate input parameters
+        if (page < 0 || pageSize <= 0) {
+            return new CommonResponse(400, "Invalid pagination parameters", Map.of(
+                    "items", Collections.emptyList(),
+                    "total", 0
+            ));
+        }
+
+        // 2. Initialize result container (ensures never null)
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // 3. Create pagination query
+            LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                wrapper.like(User::getUsername, keyword)
+                        .or().like(User::getEmail, keyword);
+            }
+
+            // 4. Execute paginated query
+            // 4. Create Page object using Page.of() (correct way)
+            IPage<User> mpPage = new Page<>(page, pageSize);
+            IPage<User> pageResult = userMapper.selectPage(mpPage, wrapper);
+
+            // 5. Populate response data
+            result.put("items", pageResult.getRecords());
+
+            return new CommonResponse(200, "Search successful", result,pageResult.getTotal());
+
+        } catch (Exception e) {
+            return new CommonResponse(500, "Search error occurred", Map.of(
+                    "items", Collections.emptyList(),
+                    "total", 0
+            ));
+        }
+    }
 }

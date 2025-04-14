@@ -2,6 +2,8 @@ package com.example.tastysphere_api.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.tastysphere_api.dto.PostDTO;
 import com.example.tastysphere_api.entity.Post;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -34,5 +36,10 @@ public interface PostMapper extends BaseMapper<Post> {
     @Select("SELECT COUNT(*) FROM posts WHERE created_time >= #{since}")
     long countSince(@Param("since") LocalDateTime since);
 
+    @Select("SELECT * FROM posts WHERE title LIKE CONCAT('%', #{keyword}, '%') OR content LIKE CONCAT('%', #{keyword}, '%')")
+    IPage<PostDTO> searchByKeyword(Page<PostDTO> pageParam, String keyword);
 
+
+
+    // 6. 新增：根据帖子 ID 获取帖子详情
 }

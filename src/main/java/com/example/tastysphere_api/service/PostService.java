@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.PostDTO;
 import com.example.tastysphere_api.dto.mapper.PostDtoMapper;
+import com.example.tastysphere_api.dto.response.CommonResponse;
 import com.example.tastysphere_api.enums.VisibilityEnum;
 import com.example.tastysphere_api.mapper.PostMapper;
 import com.example.tastysphere_api.entity.Post;
@@ -133,14 +134,7 @@ public class PostService {
         return convertToDTO(post);
     }
 
-    public IPage<PostDTO> searchPosts(String keyword, Pageable pageable) {
-        Page<Post> mpPage = new Page<>(pageable.getPageNumber() + 1, pageable.getPageSize());
-        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(Post::getContent, keyword);
 
-        Page<Post> result = postMapper.selectPage(mpPage, wrapper);
-        return result.convert(this::convertToDTO);
-    }
 
     public List<PostDTO> getRecommendedPosts(User user) {
         LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
@@ -189,4 +183,36 @@ public class PostService {
 
         postMapper.updateById(post);
     }
+
+    public Map<String, Integer> getPostStats(Long postId) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) throw new ResourceNotFoundException("Post not found");
+
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("likeCount", post.getLikeCount());
+        stats.put("commentCount", post.getCommentCount());
+        return stats;
+    }
+
+    public CommonResponse searchPosts(String keyword, int page, int pageSize) {
+        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(Post::getContent, keyword)
+                .or().like(Post::getTitle, keyword)
+                .orderByDesc(Post::getCreatedTime);
+
+        Page<Post> mpPage = new Page<>(page, pageSize);
+        IPage<Post> result = postMapper.selectPage(mpPage, wrapper);
+
+        List<PostDTO> postDTOs = result.getRecords().stream()
+                .map(this::convertToDTO)
+                .toList();
+
+        // 返回统一结构
+        Map<String, Object> data = new HashMap<>();
+        data.put("items", postDTOs);
+        data.put("total", result.getTotal());
+
+        return new CommonResponse(200, "Posts found", data);
+    }
+
 }

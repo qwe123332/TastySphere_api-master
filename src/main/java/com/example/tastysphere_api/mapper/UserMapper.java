@@ -1,6 +1,9 @@
 package com.example.tastysphere_api.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -15,4 +18,9 @@ public interface UserMapper extends BaseMapper<User> {
     List<User> selectAllUsers();
 
     long countSince(LocalDateTime time);
+
+
+    @Select("SELECT * FROM users WHERE username LIKE CONCAT('%', #{keyword}, '%') OR email LIKE CONCAT('%', #{keyword}, '%')")
+    IPage<UserDTO> searchByKeyword(Page<UserDTO> pageParam, String keyword);
+
 }
