@@ -1,11 +1,12 @@
 package com.example.tastysphere_api.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.tastysphere_api.dto.CustomUserDetails;
 import com.example.tastysphere_api.entity.Notification;
 import com.example.tastysphere_api.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class NotificationController {
     private NotificationService notificationService;
 
     @GetMapping
-    public Page<Notification> getNotifications(
+    public IPage<Notification> getNotifications(
             @AuthenticationPrincipal CustomUserDetails user,
             Pageable pageable) {
         // Extract page number and page size from Pageable
@@ -36,4 +37,5 @@ public class NotificationController {
     public long getUnreadCount(@AuthenticationPrincipal CustomUserDetails user) {
         return notificationService.getUnreadCount(user.getUser().getId());
     }
+
 }

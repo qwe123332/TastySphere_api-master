@@ -5,17 +5,11 @@ import com.example.tastysphere_api.dto.CustomUserDetails;
 import com.example.tastysphere_api.dto.PostDTO;
 import com.example.tastysphere_api.dto.PostDraftDTO;
 import com.example.tastysphere_api.dto.ReportRequestDTO;
-import com.example.tastysphere_api.dto.response.CommonResponse;
 import com.example.tastysphere_api.service.*;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
-
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,65 +22,28 @@ import java.util.Map;
 @RequestMapping("/api/posts")
 public class PostController {
 
-    @Autowired
-    private PostService postService;
-
-    @Autowired
-    private RecommendationService recommendationService;
-
-    @Autowired
-    private PostReportService postReportService;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private RestaurantService restaurantService;
-
-
-    @Autowired
-    private PostDraftService postDraftService;
+    @Autowired private PostService postService;
+    @Autowired private RecommendationService recommendationService;
+    @Autowired private PostReportService postReportService;
+    @Autowired private UserService userService;
+    @Autowired private RestaurantService restaurantService;
+    @Autowired private PostDraftService postDraftService;
 
     @GetMapping
-    public ResponseEntity<Page<PostDTO>> getPosts(
-            @RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<IPage<PostDTO>> getPosts(
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails user) {
-        // 获取 MyBatis-Plus 的 IPage 类型结果
-        IPage<PostDTO> iPage = postService.getPosts(user.getUser(), PageRequest.of(page, size));
-        // 将 IPage 转换为 Spring Data 的 Page 类型
-        Page<PostDTO> postPage = new PageImpl<>(
-                iPage.getRecords(),          // 内容列表
-                PageRequest.of(page, size),  // 分页信息
-                iPage.getTotal()             // 总记录数
-        );
-        return ResponseEntity.ok(postPage);
-    }
-
-    @PutMapping("/{postId}/audit")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> auditPost(@PathVariable Long postId, @RequestParam boolean approved) {
-        postService.auditPost(postId, approved);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(postService.getPosts(user.getUser(), page, size));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Page<PostDTO>> getPostsByUser(
+    public ResponseEntity<IPage<PostDTO>> getPostsByUser(
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-
-        // 从 service 拿到分页后的自定义 IPage<PostDTO>，再构造 JPA 的 Page
-        IPage<PostDTO> iPage = postService.getPostsByUser(userId, PageRequest.of(page, size));
-        Page<PostDTO> postPage = new PageImpl<>(
-                iPage.getRecords(),
-                PageRequest.of(page, size),
-                iPage.getTotal()
-        );
-
-
-        // 直接返回 Page 对象即可
-        return ResponseEntity.ok(postPage);
+        return ResponseEntity.ok(postService.getPostsByUser(userId, page, size));
     }
-
 
     @GetMapping("/{postId}")
     public ResponseEntity<PostDTO> getPost(
@@ -94,7 +51,7 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails user) {
         PostDTO postDTO = postService.getPost(postId);
         if (user != null) {
-            recommendationService.recordUserView(user.getUserId(), postDTO); // ✅ 用 DTO 代替 Entity 传入
+            recommendationService.recordUserView(user.getUserId(), postDTO);
         }
         return ResponseEntity.ok(postDTO);
     }
@@ -124,11 +81,6 @@ public class PostController {
         postService.deletePost(postId, user.getUser());
         return ResponseEntity.ok().build();
     }
-
-
-
-
-
 
     @GetMapping("/recommended")
     public ResponseEntity<List<PostDTO>> getRecommendedPosts(
@@ -160,18 +112,15 @@ public class PostController {
         Map<String, Integer> stats = postService.getPostStats(postId);
         return ResponseEntity.ok(stats);
     }
+
     @PostMapping("/report")
     public ResponseEntity<String> reportContent(
             @RequestBody ReportRequestDTO request,
             @AuthenticationPrincipal CustomUserDetails user) {
-
         postReportService.reportContent(
-                request.getPostId(),
-                request.getCommentId(),
-                user.getUser().getId(),
-                request.getReason()
+                request.getPostId(), request.getCommentId(),
+                user.getUser().getId(), request.getReason()
         );
-
         return ResponseEntity.ok("举报成功，感谢你的反馈！");
     }
 
@@ -196,4 +145,10 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{postId}/audit")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> auditPost(@PathVariable Long postId, @RequestParam boolean approved) {
+        postService.auditPost(postId, approved);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -15,9 +15,8 @@ import java.time.LocalDateTime;
 @TableName("merchants")
 public class Merchant {
 
-    @TableId(type = IdType.AUTO)
-    private Long id;
-
+    @TableField("user_id")
+    private Long userId; // 关联的用户ID
     @TableField("name")
     private String name;
 

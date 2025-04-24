@@ -50,9 +50,13 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/admin/login").permitAll()
+                        .requestMatchers("/api/merchant/login").permitAll()
+
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll() // 允许未登录用户查看帖子
                         .requestMatchers(HttpMethod.GET, "/api/posts/{postId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/{postId}/comments").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")  // 新增：仅允许 ROLE_ADMIN 访问
                         .anyRequest().authenticated()
                 );

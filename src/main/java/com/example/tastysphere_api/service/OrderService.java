@@ -1,5 +1,8 @@
 package com.example.tastysphere_api.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.entity.Order;
 import com.example.tastysphere_api.mapper.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,4 +34,14 @@ public class OrderService {
     public void deleteOrder(Long orderId) {
         orderMapper.deleteById(orderId); // 使用 MyBatis-Plus 的 deleteById 方法
     }
+
+    public IPage<Order> getOrdersByMerchant(Long merchantUserId, int page, int pageSize, String status) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getMerchantId, merchantUserId); // ✅ 注意：订单表中的 merchant_id 存的是 user_id
+        if (status != null && !status.isEmpty()) {
+            wrapper.eq(Order::getStatus, status);
+        }
+        return orderMapper.selectPage(new Page<>(page, pageSize), wrapper);
+    }
+
 }

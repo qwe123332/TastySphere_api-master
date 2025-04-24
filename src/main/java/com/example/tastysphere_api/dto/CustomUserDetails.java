@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,6 +19,7 @@ public class CustomUserDetails implements UserDetails {
     private final User user;
 
     public CustomUserDetails(User user) {
+
         this.user = user;
     }
 
@@ -52,6 +54,7 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public List<Role> getroles() {
+
         return user.getRoles();
     }
 
@@ -59,4 +62,5 @@ public class CustomUserDetails implements UserDetails {
     public Long getUserId() {
         return user.getId();  // 获取 User ID
     }
+
 }

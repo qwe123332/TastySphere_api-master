@@ -1,6 +1,9 @@
 package com.example.tastysphere_api.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.CommentDTO;
 import com.example.tastysphere_api.dto.mapper.CommentDtoMapper;
@@ -49,44 +52,47 @@ public class CommentService {
                 .toList();
     }
 
-    public org.springframework.data.domain.Page<CommentDTO> getPostComments(Long postId, org.springframework.data.domain.Pageable pageable) {
-        // 使用 MP 的分页
-        Page<Comment> mpPage = new Page<>(pageable.getPageNumber(), pageable.getPageSize());
+    public IPage<CommentDTO> getPostComments(Long postId, long current, long size) {
+        // 1. 构建分页对象（页码从1开始）
+        Page<Comment> mpPage = new Page<>(current, size);
 
-        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
-        wrapper.eq("post_id", postId).isNull("parent_comment_id");
+        // 2. 构建Lambda查询条件
+        LambdaQueryWrapper<Comment> wrapper = Wrappers.lambdaQuery(Comment.class)
+                .eq(Comment::getPostId, postId)
+                .isNull(Comment::getParentCommentId);
 
-        Page<Comment> topLevelPage = commentMapper.selectPage(mpPage, wrapper);
+        // 3. 查询顶级评论分页数据
+        IPage<Comment> topLevelPage = commentMapper.selectPage(mpPage, wrapper);
         List<Comment> topLevelComments = topLevelPage.getRecords();
 
-        List<Long> parentIds = topLevelComments.stream().map(Comment::getId).toList();
+        // 4. 批量查询回复（优化N+1问题）
+        List<Long> parentIds = topLevelComments.stream()
+                .map(Comment::getId)
+                .collect(Collectors.toList());
 
         Map<Long, List<Comment>> repliesMap = parentIds.isEmpty()
                 ? Collections.emptyMap()
-                : commentMapper.selectList(new QueryWrapper<Comment>()
-                        .in("parent_comment_id", parentIds))
+                : commentMapper.selectList(Wrappers.lambdaQuery(Comment.class)
+                        .in(Comment::getParentCommentId, parentIds))
                 .stream()
                 .collect(Collectors.groupingBy(Comment::getParentCommentId));
 
-        List<CommentDTO> dtoList = topLevelComments.stream()
-                .map(c -> {
-                    CommentDTO dto = commentDtoMapper.toDTO(c);
-                    dto.setReplies(commentDtoMapper.toDTOList(
-                            repliesMap.getOrDefault(c.getId(), Collections.emptyList())));
-                    return dto;
-                })
-                .toList();
-
-        return new org.springframework.data.domain.PageImpl<>(dtoList, pageable, topLevelPage.getTotal());
+        // 5. 转换分页对象
+        return topLevelPage.convert(comment -> {
+            CommentDTO dto = commentDtoMapper.toDTO(comment);
+            dto.setReplies(commentDtoMapper.toDTOList(
+                    repliesMap.getOrDefault(comment.getId(), Collections.emptyList())));
+            return dto;
+        });
     }
 
-    public org.springframework.data.domain.Page<Comment> getCommentReplies(Long parentCommentId, org.springframework.data.domain.Pageable pageable) {
-        Page<Comment> mpPage = new Page<>(pageable.getPageNumber(), pageable.getPageSize());
-
-        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
-        wrapper.eq("parent_comment_id", parentCommentId);
-
-        Page<Comment> result = commentMapper.selectPage(mpPage, wrapper);
-        return new org.springframework.data.domain.PageImpl<>(result.getRecords(), pageable, result.getTotal());
+    public IPage<Comment> getCommentReplies(Long parentCommentId, long current, long size) {
+        // MyBatis-Plus 分页对象（页码从1开始）
+        Page<Comment> mpPage = new Page<>(current, size);
+        // 构建Lambda查询条件（推荐类型安全写法）
+        LambdaQueryWrapper<Comment> wrapper = Wrappers.lambdaQuery(Comment.class)
+                .eq(Comment::getParentCommentId, parentCommentId);
+        // 执行分页查询
+        return commentMapper.selectPage(mpPage, wrapper);
     }
 }

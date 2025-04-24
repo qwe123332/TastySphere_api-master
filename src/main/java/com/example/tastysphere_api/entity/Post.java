@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.example.tastysphere_api.entity.Comment;
 import com.example.tastysphere_api.enums.VisibilityEnum;
 import com.example.tastysphere_api.handler.StringListTypeHandler;
 import lombok.Data;
@@ -32,9 +31,9 @@ public class Post {
     private VisibilityEnum visibility;
     private Integer likeCount;
     private Integer commentCount;
-    @TableField(value = "is_audited")
+
     private Boolean audited;
-    @TableField(value = "is_approved")
+
     private Boolean approved;
 
     private String category;

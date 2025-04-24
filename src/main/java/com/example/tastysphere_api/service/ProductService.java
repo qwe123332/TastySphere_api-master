@@ -11,9 +11,7 @@ public class ProductService {
     @Autowired
     private ProductMapper productMapper;  // ✅ 修改接口名
 
-    public List<Product> getAllProducts() {
-        return productMapper.selectList(null);
-    }
+
 
     public Optional<Product> getProductById(Long productId) {
         return Optional.ofNullable(productMapper.selectById(productId));
@@ -28,7 +26,17 @@ public class ProductService {
         return product;
     }
 
-    public void deleteProduct(Long productId) {
-        productMapper.deleteById(productId);
+    public void deleteProduct(Long productId, Long id) {
+        Product product = productMapper.selectById(productId);
+        if (product != null && product.getUserId().equals(id)) {
+            productMapper.deleteById(productId);
+        } else {
+            throw new IllegalArgumentException("Product not found or not owned by the merchant");
+        }
+
+    }
+
+    public void updateProduct(Product product) {
+        productMapper.updateById(product);
     }
 }

@@ -89,7 +89,7 @@ public class MybatisPlusSampleTest {
     @Test
     void testPostMapper_auditedApproved() {
         QueryWrapper<Post> wrapper = new QueryWrapper<>();
-        wrapper.eq("is_audited", true).eq("is_approved", true);
+        wrapper.eq("audited", true).eq("approved", true);
         List<Post> posts = postMapper.selectList(wrapper);
         posts.forEach(System.out::println);
         assertThat(posts).isNotEmpty();

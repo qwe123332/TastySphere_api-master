@@ -1,5 +1,7 @@
 package com.example.tastysphere_api.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.CommentDTO;
 import com.example.tastysphere_api.dto.CustomUserDetails;
 import com.example.tastysphere_api.dto.mapper.CommentDtoMapper;
@@ -9,7 +11,7 @@ import com.example.tastysphere_api.service.SensitiveWordService;
 import com.example.tastysphere_api.service.SocialService;
 import com.example.tastysphere_api.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -81,18 +83,18 @@ public class SocialController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public Page<CommentDTO> getPostComments(
+    public IPage<CommentDTO> getPostComments(
             @PathVariable Long postId,
             Pageable pageable) {
-        return socialService.getPostComments(postId, pageable)
-                .map(commentDtoMapper::toDTO);
+        return socialService.getPostComments(postId, pageable);
+
     }
 
     @GetMapping("/comments/{commentId}/replies")
-    public Page<CommentDTO> getCommentReplies(
+    public IPage<CommentDTO> getCommentReplies(
             @PathVariable Long commentId,
             Pageable pageable) {
-        return socialService.getCommentReplies(commentId, pageable)
-                .map(commentDtoMapper::toDTO);
+        return socialService.getCommentReplies(commentId, pageable);
+
     }
 }

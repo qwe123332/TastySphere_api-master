@@ -16,11 +16,12 @@ import java.time.LocalDateTime;
 @TableName("products")
 public class Product {
 
-    @TableId(type = IdType.AUTO)
-    private Long id;
+    @TableId(value = "product_id", type = IdType.AUTO)
+    private Long productId;
 
-    @TableField("merchant_id")
-    private Long merchantId; // 替代 @ManyToOne
+
+    @TableField("user_id")
+    private Long userId;
 
     @TableField("name")
     private String name;

@@ -44,7 +44,7 @@ public class User {
     private String status;
 
     @TableField("is_active")
-    private boolean active = true;
+    private Boolean active = true;
 
     @TableField(exist = false)
     private List<Role> roles = new ArrayList<>();

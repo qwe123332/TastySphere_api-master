@@ -1,7 +1,9 @@
 package com.example.tastysphere_api.service;
 
-import com.baomidou.mybatisplus.core.assist.ISqlRunner;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.request.ReportReviewRequest;
 import com.example.tastysphere_api.entity.AuditLog;
@@ -16,9 +18,6 @@ import com.example.tastysphere_api.mapper.PostReportMapper;
 import com.example.tastysphere_api.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +47,7 @@ public class AdminService {
     private PostReportMapper postReportMapper;
 
     /** 获取所有审计日志 */
-    public Page<AuditLog> getAuditLogs(Page<AuditLog> page) {
+    public IPage<AuditLog> getAuditLogs(Page<AuditLog> page) {
         // 使用MyBatis Plus的selectPage方法[2,7](@ref)
         return auditLogMapper.selectPage(page, null);
     }
@@ -68,14 +67,27 @@ public class AdminService {
 
         stats.put("totalUsers", userMapper.selectCount(null));
         stats.put("totalPosts", postMapper.selectCount(null));
-        stats.put("activeUsers", userMapper.selectCount(new QueryWrapper<User>().eq("active", true)));
+
+        stats.put("activeUsers", userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getActive, true)
+        ));
+
         stats.put("newUsersToday", userMapper.countSince(today));
         stats.put("newPostsToday", postMapper.countSince(today));
-        stats.put("pendingAudit", postMapper.selectCount(new QueryWrapper<Post>().eq("audited", false)));
-        stats.put("approvedPosts", postMapper.selectCount(new QueryWrapper<Post>().eq("audited", true).eq("approved", true)));
+
+        stats.put("pendingAudit", postMapper.selectCount(
+                new LambdaQueryWrapper<Post>().eq(Post::getAudited, false)
+        ));
+
+        stats.put("approvedPosts", postMapper.selectCount(
+                new LambdaQueryWrapper<Post>()
+                        .eq(Post::getAudited, true)
+                        .eq(Post::getApproved, true)
+        ));
 
         return stats;
     }
+
     @Transactional(rollbackFor = Exception.class)
     public void auditPost(Long postId, boolean approved, User admin, String reason) {
         Post post = postMapper.selectById(postId);
@@ -116,11 +128,6 @@ public class AdminService {
         }
     }
 
-    /** 用户分页查询 */
-    public org.springframework.data.domain.Page<User> getUsers(int page, int size) {
-        Page<User> mpPage = userMapper.selectPage(new Page<>(page, size), null);
-        return new PageImpl<>(mpPage.getRecords(), org.springframework.data.domain.PageRequest.of(page, size), mpPage.getTotal());
-    }
 
     /** 更新用户状态（封禁/解封） */
     @Transactional(rollbackFor = Exception.class)
@@ -149,14 +156,17 @@ public class AdminService {
     }
 
     /** 获取待审核帖子分页 */
-    public org.springframework.data.domain.Page<Post> getPendingPosts(Pageable pageable) {
-        Page<Post> mpPage = postMapper.selectPage(
-                new Page<>(pageable.getPageNumber(), pageable.getPageSize()),
-                new QueryWrapper<Post>().eq("audited", false)
-        );
-        return new PageImpl<>(mpPage.getRecords(), pageable, mpPage.getTotal());
-    }
+    public IPage<Post> getPendingPosts(long current, long size) {
+        // MyBatis-Plus分页对象（页码从1开始）
+        Page<Post> page = new Page<>(current, size);
 
+        // 构建Lambda查询条件（推荐类型安全写法）
+        LambdaQueryWrapper<Post> wrapper = Wrappers.<Post>lambdaQuery()
+                .eq(Post::getAudited, false);
+
+        // 执行分页查询
+        return postMapper.selectPage(page, wrapper);
+    }
     /** 获取系统运行资源指标 */
     public Map<String, Object> getSystemMetrics() {
         try {
@@ -186,16 +196,6 @@ public class AdminService {
         return (double) (root.getTotalSpace() - root.getFreeSpace()) / root.getTotalSpace() * 100;
     }
 
-
-    public org.springframework.data.domain.Page<PostReport> getReports(int page, int size, String status) {
-        QueryWrapper<PostReport> queryWrapper = new QueryWrapper<>();
-        if (status != null) {
-            queryWrapper.eq("status", status);
-        }
-
-        Page<PostReport> mpPage = postReportMapper.selectPage(new Page<>(page, size), queryWrapper);
-        return new PageImpl<>(mpPage.getRecords(), org.springframework.data.domain.PageRequest.of(page, size), mpPage.getTotal());
-    }
 
     public PostReport getReportById(Long id) {
         PostReport report = postReportMapper.selectById(id);
@@ -231,4 +231,29 @@ public class AdminService {
             throw new BusinessException("审核操作失败: " + e.getMessage());
         }
     }
+
+
+
+    public IPage<AuditLog> getAuditLogs(int page, int size) {
+        IPage<AuditLog> mpPage = new Page<>(page, size);
+        return auditLogMapper.selectPage(mpPage, null);
+    }
+
+    public IPage<User> getUsers(int page, int size) {
+        return userMapper.selectPage(new Page<>(page, size), null);
+    }
+
+    public IPage<Post> getPendingPosts(int page, int size) {
+        QueryWrapper<Post> wrapper = new QueryWrapper<>();
+        wrapper.eq("audited", false);
+        return postMapper.selectPage(new Page<>(page, size), wrapper);
+    }
+
+    public IPage<PostReport> getReports(int page, int size, String status) {
+        QueryWrapper<PostReport> wrapper = new QueryWrapper<>();
+        if (status != null) wrapper.eq("status", status);
+        return postReportMapper.selectPage(new Page<>(page, size), wrapper);
+    }
+
+
 }

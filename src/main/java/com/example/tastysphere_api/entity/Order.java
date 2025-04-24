@@ -19,7 +19,7 @@ import java.util.List;
 public class Order {
 
     @TableId(type = IdType.AUTO)
-    private Long id;
+    private Long orderId;
 
     @TableField("user_id")
     private Long userId; // 替代 @ManyToOne

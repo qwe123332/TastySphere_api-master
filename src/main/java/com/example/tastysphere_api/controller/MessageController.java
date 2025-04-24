@@ -5,6 +5,7 @@ import com.example.tastysphere_api.dto.CustomUserDetails;
 import com.example.tastysphere_api.dto.request.MessageRequest;
 import com.example.tastysphere_api.entity.PrivateMessage;
 import com.example.tastysphere_api.service.MessageService;
+import com.example.tastysphere_api.util.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -77,6 +78,7 @@ public class MessageController {
             @AuthenticationPrincipal CustomUserDetails user) {
         Long userId = user.getUser().getId();
         List<ConversationPreview> result = messageService.getConversationPreviews(userId);
+
         return ResponseEntity.ok(result);
     }
 

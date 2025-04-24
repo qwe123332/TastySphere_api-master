@@ -29,6 +29,8 @@ public class Role {
     @TableField(exist = false)
     private Set<Permission> permissions = new HashSet<>();
 
+
+
     // 增加权限
     public void addPermission(Permission permission) {
         this.permissions.add(permission);

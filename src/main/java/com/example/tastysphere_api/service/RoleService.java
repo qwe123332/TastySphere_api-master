@@ -73,4 +73,9 @@ public class RoleService {
             return false;
         }
     }
+
+
+    public Role getRoleByName(String role) {
+        return roleMapper.selectOne(new QueryWrapper<Role>().eq("name", role));
+    }
 }

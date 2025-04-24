@@ -7,7 +7,7 @@
 
     <select id="selectByMerchantId" resultType="com.example.tastysphere_api.entity.Product">
         SELECT * FROM products
-        WHERE merchant_id = #{id}
+        WHERE user_id = #{id}
         ORDER BY created_time DESC
     </select>
 

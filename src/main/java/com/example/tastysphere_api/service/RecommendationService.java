@@ -1,5 +1,6 @@
 package com.example.tastysphere_api.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.PostDTO;
@@ -39,11 +40,12 @@ public class RecommendationService {
     private List<Post> findFollowingApprovedPosts(List<Long> userIds, int limit) {
         if (userIds == null || userIds.isEmpty()) return Collections.emptyList();
 
-        QueryWrapper<Post> wrapper = new QueryWrapper<>();
-        wrapper.in("user_id", userIds)
-                .eq("approved", true)
-                .eq("audited", true)
-                .orderByDesc("created_time");
+        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Post::getUserId, userIds)
+                .eq(Post::getApproved, true)
+                .eq(Post::getAudited, true)
+                .orderByDesc(Post::getCreatedTime);
+
 
         return postMapper.selectPage(new Page<>(1, limit), wrapper).getRecords();
     }

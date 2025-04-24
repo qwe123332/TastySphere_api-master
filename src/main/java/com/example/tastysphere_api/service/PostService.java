@@ -50,19 +50,7 @@ public class PostService {
         return convertToDTO(post);
     }
 
-    public IPage<PostDTO> getPosts(User user, Pageable pageable) {
-        Page<Post> mpPage = new Page<>(pageable.getPageNumber() + 1, pageable.getPageSize());
-        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
 
-        if (user != null && user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"))) {
-            wrapper.eq(Post::getAudited, true);
-        } else {
-            wrapper.eq(Post::getAudited, true).eq(Post::getApproved, true);
-        }
-
-        Page<Post> result = postMapper.selectPage(mpPage, wrapper);
-        return result.convert(this::convertToDTO);
-    }
 
     public PostDTO createPost(PostDTO postDTO, User user) {
         Post post = new Post();
@@ -105,14 +93,7 @@ public class PostService {
         postMapper.deleteById(postId);
     }
 
-    public IPage<PostDTO> getPostsByUser(Long userId, Pageable pageable) {
-        Page<Post> mpPage = new Page<>(pageable.getPageNumber() + 1, pageable.getPageSize());
-        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Post::getUserId, userId);
 
-        Page<Post> result = postMapper.selectPage(mpPage, wrapper);
-        return result.convert(this::convertToDTO);
-    }
 
     public PostDTO updatePost(Long postId, PostDTO postDTO, User currentUser) {
         Post post = postMapper.selectById(postId);
@@ -214,5 +195,90 @@ public class PostService {
 
         return new CommonResponse(200, "Posts found", data);
     }
+
+    // ✅ 管理后台专用：分页获取“待审核”帖子
+    public IPage<PostDTO> getPendingPosts(Page<Post> page) {
+        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Post::getAudited, false);  // ✅ 安全可用
+        IPage<PostDTO> convert = postMapper.selectPage(page, wrapper).convert(this::convertToDTO);
+        return convert.convert(post -> {
+            PostDTO postDTO = new PostDTO();
+            postDTO.setId(post.getId());
+            postDTO.setUserId(post.getUserId());
+
+            postDTO.setTitle(post.getTitle());
+            postDTO.setImages(post.getImages());
+            postDTO.setLikeCount(post.getLikeCount());
+            postDTO.setCommentCount(post.getCommentCount());
+
+            postDTO.setContent(post.getContent());
+            postDTO.setVisibility(post.getVisibility());
+            postDTO.setCreatedTime(post.getCreatedTime());
+            postDTO.setUsername(userService.getUserById(post.getUserId()).getUsername());
+            postDTO.setUserAvatar(userService.getUserById(post.getUserId()).getAvatar());
+        return postDTO;
+        });
+        //作者信息
+
+    }
+
+    // ✅ 管理后台专用：审核帖子（通过/拒绝 + 原因 + 审核人）
+    public void auditPost(Long postId, boolean approved, User admin, String reason) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new ResourceNotFoundException("帖子不存在");
+        }
+        post.setAudited(true);
+        post.setApproved(approved);
+        post.setAuditTime(LocalDateTime.now());
+        postMapper.updateById(post);
+    }
+
+    // ✅ 管理后台专用：删除任意帖子（管理员强制删除）
+    public void adminDelete(Long postId) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new ResourceNotFoundException("帖子不存在");
+        }
+        postMapper.deleteById(postId);
+    }
+
+    public IPage<PostDTO> getPosts(User user, int page, int size) {
+        IPage<Post> mpPage = new Page<>(page, size);
+        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Post::getUserId, user.getId());
+        IPage<Post> postPage = postMapper.selectPage(mpPage, wrapper);
+        return postPage.convert(this::convertToDTO);
+    }
+
+    public IPage<PostDTO> getPostsByUser(Long userId, int page, int size) {
+        IPage<Post> mpPage = new Page<>(page, size);
+        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Post::getUserId, userId);
+        IPage<Post> postPage = postMapper.selectPage(mpPage, wrapper);
+        return postPage.convert(this::convertToDTO);
+    }
+
+    public PostDTO getPostById(Long id) {
+        Post post = postMapper.selectById(id);
+        if (post == null) {
+            throw new ResourceNotFoundException("Post not found with id: " + id);
+        }
+        return convertToDTO(post);
+    }
+
+    public IPage<PostDTO> getAllPosts(IPage<Post> objectPage, String search) {
+        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
+        if (search != null && !search.isEmpty()) {
+            wrapper.like(Post::getContent, search)
+                    .or().like(Post::getTitle, search);
+        }
+        IPage<Post> postPage = postMapper.selectPage(objectPage, wrapper);
+        return postPage.convert(this::convertToDTO);
+    }
+
+
+    // ... 其余原有方法不动（略） ...
+
 
 }

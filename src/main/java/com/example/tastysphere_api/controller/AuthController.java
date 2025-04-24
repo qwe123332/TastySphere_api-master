@@ -26,10 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -91,6 +88,8 @@ public class AuthController {
             String token = tokenProvider.generateToken(authentication.getName(), list);
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
+            //200状态码
+            response.put("status", "200");
             return ResponseEntity.ok(response);
         } catch (AuthenticationException ex) {
             return ResponseEntity.status(401).body("用户名或密码错误");
@@ -98,31 +97,35 @@ public class AuthController {
     }
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegisterRequest registerRequest) {
-        // 处理注册逻辑
         if (userService.existsByUsername(registerRequest.getUsername())) {
             return ResponseEntity.badRequest().body("用户名已存在");
         }
         if (userService.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest().body("邮箱已被注册");
         }
-      User user = new User();
+
+        // 创建用户实体
+        User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setEmail(registerRequest.getEmail());
         user.setPhoneNumber(registerRequest.getPhone());
         user.setStatus(registerRequest.getStatus());
-        user.setStatus(registerRequest.getStatus());
-        // 头像字段这里不做设置，可留空
-
-        // 设置创建和更新时间（这里简单设置为当前时间）
-        LocalDateTime now = LocalDateTime.now();
-        user.setCreatedTime(now);
-        user.setUpdatedTime(now);
-        // 默认激活状态
+        user.setCreatedTime(LocalDateTime.now());
+        user.setUpdatedTime(LocalDateTime.now());
         user.setActive(true);
+
+        // ⭐ 根据角色名查出数据库中对应的角色
+        Role role = userService.getRoleByName(registerRequest.getRole());
+        if (role == null) {
+            return ResponseEntity.badRequest().body("非法角色类型");
+        }
+        user.setRoles(Collections.singletonList(role)); // 设置角色
+
         userService.createUser(user);
         return ResponseEntity.ok("注册成功");
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request) {
