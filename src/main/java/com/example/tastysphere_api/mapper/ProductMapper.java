@@ -12,5 +12,7 @@ public interface ProductMapper extends BaseMapper<Product> {
     @Select("SELECT * FROM products WHERE products.user_id = #{id}")
     List<Product> selectByMerchantId(Long id);
 
+@Select("SELECT * FROM products")
+    List<Product> selectAllProducts(int offset, int size);
 
 }

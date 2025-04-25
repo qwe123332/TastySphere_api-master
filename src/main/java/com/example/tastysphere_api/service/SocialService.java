@@ -5,19 +5,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.CommentDTO;
+import com.example.tastysphere_api.dto.UserDTO;
+import com.example.tastysphere_api.dto.mapper.UserDtoMapper;
 import com.example.tastysphere_api.entity.*;
-import com.example.tastysphere_api.exception.ResourceNotFoundException;
 import com.example.tastysphere_api.mapper.*;
-import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +38,9 @@ public class SocialService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private UserDtoMapper userDtoMapper;
+
     @Transactional
     public Comment createComment(Long postId, Long parentId, String content, User user) {
         Comment comment = new Comment();
@@ -58,7 +59,7 @@ public class SocialService {
             Comment parentComment = commentMapper.selectById(parentId);
             if (parentComment != null) {
                 // ⚠️ 用 userId 查找 user 对象
-                User parentUser = userMapper.selectById(parentComment.getUserId());
+                UserDTO parentUser = userDtoMapper.toDTO(userMapper.selectById(parentComment.getUserId()));
 
                 notificationService.createNotification(
                         parentUser,
@@ -97,7 +98,7 @@ public class SocialService {
         Post post = postMapper.selectById(postId);
         if (post != null && post.getUserId() != null) {
             // ⚠️ 这里使用 userRepository 查询被点赞用户
-            User postOwner = userMapper.selectById(post.getUserId());
+            UserDTO postOwner =  userDtoMapper.toDTO(userMapper.selectById(post.getUserId()));
 
             if (postOwner != null) {
                 notificationService.createNotification(
@@ -111,7 +112,7 @@ public class SocialService {
     }
 
     @Transactional
-    public void toggleFollow(User follower, User following) {
+    public void toggleFollow(User follower, UserDTO following) {
         Long followerId = follower.getId();
         Long followingId = following.getId();
 

@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.NotificationDTO;
-import com.example.tastysphere_api.dto.PostDTO;
 import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.dto.mapper.UserDtoMapper;
 import com.example.tastysphere_api.dto.response.CommonResponse;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -42,6 +40,16 @@ public class UserService {
         this.applicationContext = applicationContext;
     }
 
+    public  String getUserIdByEmail(String email) {
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with email: " + email);
+        }
+        return user.getId().toString();
+
+
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public User createUser(User user) {
         validateUser(user);
@@ -52,24 +60,25 @@ public class UserService {
     @CacheEvict(value = "users", key = "#userId")
     @Transactional(rollbackFor = Exception.class)
     public UserDTO updateProfile(Long userId, UserDTO userDTO) {
-        User user = findUserOrThrow(userId);
+        UserDTO user = findUserOrThrow(userId);
         if (userDTO.getUsername() != null) user.setUsername(userDTO.getUsername());
         if (userDTO.getEmail() != null) user.setEmail(userDTO.getEmail());
-        userMapper.updateById(user);
-        return userDtoMapper.toDTO(user);
+        userMapper.updateById((Collection<User>) user);
+        return user;
     }
 
     @Cacheable(value = "users", key = "#id", unless = "#result == null")
     @Transactional(readOnly = true)
-    public User getUserById(Long id) {
-        return userMapper.selectById(id);
+    public UserDTO getUserById(Long id) {
+        User user = userMapper.selectById(id);
+        return userDtoMapper.toDTO(user);
     }
 
     @Cacheable(value = "userProfiles", key = "#userId", unless = "#result == null")
     @Transactional(readOnly = true)
     public UserDTO getUserProfile(Long userId) {
-        User user = findUserOrThrow(userId);
-        return userDtoMapper.toDTO(user);
+        UserDTO user = findUserOrThrow(userId);
+        return user;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -126,10 +135,10 @@ public class UserService {
         if (existsByEmail(user.getEmail())) throw new IllegalArgumentException("Email already exists");
     }
 
-    private User findUserOrThrow(Long userId) {
+    private UserDTO findUserOrThrow(Long userId) {
         User user = userMapper.selectById(userId);
         if (user == null) throw new ResourceNotFoundException("User not found with id: " + userId);
-        return user;
+        return userDtoMapper.toDTO(user);
     }
 
     public void blockUser(Long blockedUserId) {}
@@ -188,5 +197,9 @@ public class UserService {
             throw new ResourceNotFoundException("Role not found with name: " + role);
         }
         return roleEntity;
+    }
+
+    public User getOne(QueryWrapper<User> queryWrapper) {
+        return userMapper.selectOne(queryWrapper);
     }
 }

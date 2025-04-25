@@ -17,6 +17,7 @@ public class ProductController {
 
     private final ProductService productService;
 
+
     // 1. 获取当前商家的商品
     @GetMapping
     public List<Product> getMyProducts(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -53,6 +54,12 @@ public class ProductController {
                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
         productService.deleteProduct(id, userDetails.getUser().getId());
         return ResponseEntity.ok("商品已删除");
+    }
+    //根据商品ID获取商品详情
+    @GetMapping("/{productId}")
+    public ResponseEntity<Product> getProductById(@PathVariable Long productId) {
+        Product product = productService.getProductById(productId);
+        return ResponseEntity.ok(product);
     }
 
 }

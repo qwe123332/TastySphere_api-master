@@ -5,7 +5,6 @@ import com.example.tastysphere_api.dto.CustomUserDetails;
 import com.example.tastysphere_api.dto.NotificationDTO;
 import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.entity.User;
-import com.example.tastysphere_api.exception.ResourceNotFoundException;
 import com.example.tastysphere_api.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +22,8 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        Optional<User> user = Optional.ofNullable(userService.getUserById(id));
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        Optional<UserDTO> user = Optional.ofNullable(userService.getUserById(id));
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 

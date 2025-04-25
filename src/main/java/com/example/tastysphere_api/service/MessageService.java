@@ -2,36 +2,61 @@ package com.example.tastysphere_api.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.tastysphere_api.dto.ConversationPreview;
+import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.entity.Message;
 import com.example.tastysphere_api.entity.PrivateMessage;
 import com.example.tastysphere_api.entity.User;
-import com.example.tastysphere_api.mapper.MessageMapper;
 import com.example.tastysphere_api.mapper.PrivateMessageMapper;
 import com.example.tastysphere_api.util.UrlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class MessageService {
+    private static final Logger log = LoggerFactory.getLogger(MessageService.class);
+
+    private final PrivateMessageMapper privateMessageMapper;
+    private final UserService userService;
 
     @Autowired
-    private PrivateMessageMapper privateMessageMapper;
-    @Autowired
-    private UserService userService;
-    private final MessageMapper messageMapper;
-
-    public MessageService(MessageMapper messageMapper) {
-        this.messageMapper = messageMapper;
+    public MessageService(PrivateMessageMapper privateMessageMapper, UserService userService) {
+        this.privateMessageMapper = privateMessageMapper;
+        this.userService = userService;
     }
 
+    /**
+     * Legacy method for backward compatibility
+     * Converts and saves a message from the old format
+     */
     public void saveMessage(Message message) {
-        messageMapper.insertMessage(message);
+        // Convert from legacy Message to PrivateMessage
+        PrivateMessage privateMessage = new PrivateMessage();
+
+        // Handle different ID formats (String vs Long)
+        privateMessage.setSenderId(Long.valueOf(message.getFromUserId()));
+        privateMessage.setReceiverId(Long.valueOf(message.getToUserId()));
+        privateMessage.setContent(message.getContent());
+        privateMessage.setRead(false); // Default to unread
+
+        // Use the message's timestamp if available, otherwise use current time
+        privateMessage.setTimestamp(message.getCreatedTime() != null ?
+                message.getCreatedTime() :
+                LocalDateTime.now());
+
+        // Save using the mapper
+        privateMessageMapper.insert(privateMessage);
+
+        // Log the save operation with current date and user login
+        log.info("Message saved at {} by user {}: from {} to {}",
+                LocalDateTime.now(),
+                "qwe123332", // Current user login from your input
+                message.getFromUserId(),
+                message.getToUserId());
     }
 
     public void sendMessage(Long senderId, Long receiverId, String content) {
@@ -43,6 +68,7 @@ public class MessageService {
         message.setTimestamp(LocalDateTime.now());
 
         privateMessageMapper.insert(message);
+        log.info("Message sent at {} by userId {}: to {}", LocalDateTime.now(), senderId, receiverId);
     }
 
     public List<PrivateMessage> getConversation(Long userId1, Long userId2, int page, int size) {
@@ -56,70 +82,40 @@ public class MessageService {
 
     public void markAsRead(Long messageId, Long userId) {
         privateMessageMapper.markAsRead(messageId, userId);
-    }
-
-
-    public List<Map<String, Object>> getConversations(Long userId) {
-        List<Long> partnerIds = privateMessageMapper.findConversationPartners(userId);
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (Long partnerId : partnerIds) {
-            User partner = userService.getUserById(partnerId); // 获取用户名和头像
-            PrivateMessage lastMsg = privateMessageMapper.findLastMessageBetween(userId, partnerId);
-            int unread = privateMessageMapper.countUnreadFromUser(partnerId, userId);
-
-            Map<String, Object> map = new HashMap<>();
-            map.put("userId", partner.getId());
-            map.put("username", partner.getUsername());
-            map.put("avatar", partner.getAvatar());
-            map.put("lastMessage", lastMsg != null ? lastMsg.getContent() : "");
-            map.put("lastTime", lastMsg != null ? lastMsg.getTimestamp() : null);
-            map.put("unreadCount", unread);
-            result.add(map);
-        }
-
-        // 按时间倒序排序
-        result.sort((a, b) -> {
-            LocalDateTime timeA = (LocalDateTime) a.get("lastTime");
-            LocalDateTime timeB = (LocalDateTime) b.get("lastTime");
-            return timeB.compareTo(timeA);
-        });
-
-        return result;
+        log.info("Message {} marked as read by user {}", messageId, userId);
     }
 
     public void deleteConversation(Long userId, Long partnerId) {
-        // 标记逻辑删除（假设使用字段 deleted_by_user_id）或直接删除自己的记录视图
-        // 简化实现：彻底删除与该用户之间所有消息（不推荐正式环境用）
-        QueryWrapper<PrivateMessage> wrapper = new QueryWrapper<>();
-        wrapper.and(qw -> qw
-                .eq("sender_id", userId).eq("receiver_id", partnerId)
-                .or()
-                .eq("sender_id", partnerId).eq("receiver_id", userId)
-        );
-        privateMessageMapper.delete(wrapper);
+        privateMessageMapper.deleteConversation(userId, partnerId);
+        log.info("Conversation deleted at {} between users {} and {}",
+                LocalDateTime.now(), userId, partnerId);
     }
 
     public List<ConversationPreview> getConversationPreviews(Long userId) {
-        List<ConversationPreview> previews = new ArrayList<>();
-        List<Long> partnerIds = privateMessageMapper.findConversationPartners(userId);
-
-        for (Long partnerId : partnerIds) {
-            User partner = userService.getUserById(partnerId);
-            PrivateMessage lastMsg = privateMessageMapper.findLastMessageBetween(userId, partnerId);
-            int unreadCount = privateMessageMapper.countUnreadFromUser(partnerId, userId);
-
-            ConversationPreview preview = new ConversationPreview();
-            preview.setUserId(partner.getId());
-            preview.setUsername(partner.getUsername());
-            preview.setAvatar(UrlUtils.resolveAvatarUrl(partner.getAvatar()));
-            preview.setLastMessage(lastMsg != null ? lastMsg.getContent() : "");
-            preview.setLastTime(lastMsg != null ? lastMsg.getTimestamp() : null);
-            preview.setUnreadCount(unreadCount);
-
-            previews.add(preview);
+        // Use the optimized SQL query from the mapper
+        List<ConversationPreview> conversationPreviews = privateMessageMapper.getConversationPreviews(userId);
+        for (ConversationPreview preview : conversationPreviews) {
+            // Fetch user details for each conversation partner
+            preview.setAvatar(UrlUtils.resolveAvatarUrl(preview.getAvatar()));
         }
-
-        return previews;
+        return conversationPreviews;
     }
+
+    public String getUserIdByEmail(String input) {
+        // Check if the input is a valid email
+
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("email", input);
+            User user = userService.getOne(queryWrapper);
+            return user != null ? String.valueOf(user.getId()) : null;
+
+        // If not, assume it's a user ID
+    }
+
+
+    public void markConversationAsRead(Long receiverId, Long senderId) {
+        privateMessageMapper.markConversationAsRead(receiverId, senderId);
+        log.info("Conversation marked as read: receiver={}, sender={}", receiverId, senderId);
+    }
+
 }

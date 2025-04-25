@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.CommentDTO;
 import com.example.tastysphere_api.dto.CustomUserDetails;
+import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.dto.mapper.CommentDtoMapper;
 import com.example.tastysphere_api.entity.Comment;
 import com.example.tastysphere_api.entity.User;
@@ -74,7 +75,7 @@ public class SocialController {
             @PathVariable Long userId,
             @AuthenticationPrincipal CustomUserDetails user) {
         // 获取目标用户（Service 层返回 Optional<User>）
-        User following = userService.getUserById(userId);
+        UserDTO following = userService.getUserById(userId);
 
         // 执行关注/取关操作
         socialService.toggleFollow(user.getUser(), following);

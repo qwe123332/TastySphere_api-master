@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/admin/login").permitAll()
                         .requestMatchers("/api/merchant/login").permitAll()
+                        .requestMatchers("/ws/**").permitAll() // ✅ 放行 WebSocket 握手请求
 
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll() // 允许未登录用户查看帖子

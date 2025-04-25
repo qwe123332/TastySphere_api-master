@@ -1,20 +1,32 @@
 package com.example.tastysphere_api.service;
+
 import com.example.tastysphere_api.entity.Product;
 import com.example.tastysphere_api.mapper.ProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
+
 @Service
 public class ProductService {
 
     @Autowired
-    private ProductMapper productMapper;  // ✅ 修改接口名
+    private ProductMapper productMapper;
 
+    /**
+     * 获取所有商品
+     * @param page 页码
+     * @param size 每页大小
+     * @return 商品列表
+     */
+    public List<Product> getAllProducts(int page, int size) {
+        int offset = (page - 1) * size;
+        return productMapper.selectAllProducts(offset, size);
+    }
 
-
-    public Optional<Product> getProductById(Long productId) {
-        return Optional.ofNullable(productMapper.selectById(productId));
+    public Product getProductById(Long productId) {
+        return productMapper.selectById(productId);
     }
 
     public List<Product> getProductsByMerchantId(Long merchantId) {
@@ -33,7 +45,6 @@ public class ProductService {
         } else {
             throw new IllegalArgumentException("Product not found or not owned by the merchant");
         }
-
     }
 
     public void updateProduct(Product product) {

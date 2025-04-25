@@ -34,7 +34,7 @@ public class PostController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails user) {
-        return ResponseEntity.ok(postService.getPosts(user.getUser(), page, size));
+        return ResponseEntity.ok(postService.getPosts(page, size));
     }
 
     @GetMapping("/user/{userId}")

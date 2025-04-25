@@ -1,6 +1,5 @@
 package com.example.tastysphere_api.config;
 
-
 import com.example.tastysphere_api.handler.ChatWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -18,6 +17,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chatWebSocketHandler, "/ws/chat").setAllowedOrigins("*");
+        registry.addHandler(chatWebSocketHandler, "/ws/chat")
+                .setAllowedOrigins("*");
     }
 }

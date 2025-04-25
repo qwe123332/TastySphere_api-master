@@ -2,6 +2,7 @@ package com.example.tastysphere_api.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.dto.request.NotificationRequest;
 import com.example.tastysphere_api.entity.Notification;
 import com.example.tastysphere_api.entity.User;
@@ -24,7 +25,7 @@ public class NotificationService {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    public void createNotification(User user, String content, String type, Long relatedId) {
+    public void createNotification(UserDTO user, String content, String type, Long relatedId) {
         Notification notification = new Notification();
         notification.setUserId(user.getId()); // Set userId directly
         notification.setContent(content);

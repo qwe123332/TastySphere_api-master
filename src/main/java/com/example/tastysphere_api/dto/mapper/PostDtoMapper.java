@@ -2,6 +2,7 @@ package com.example.tastysphere_api.dto.mapper;
 
 import com.example.tastysphere_api.dto.CommentDTO;
 import com.example.tastysphere_api.dto.PostDTO;
+import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.entity.Comment;
 import com.example.tastysphere_api.entity.Post;
 import com.example.tastysphere_api.entity.User;
@@ -73,7 +74,7 @@ public interface PostDtoMapper {
         if (target.getCommentCount() == null) target.setCommentCount(0);
     }
     @Named("toDTOWithUserAndContext")
-    default PostDTO toDTOWithUserAndContext(Post post, User user, Long currentUserId, Set<Long> likedPostIds) {
+    default PostDTO toDTOWithUserAndContext(Post post, UserDTO user, Long currentUserId, Set<Long> likedPostIds) {
         PostDTO dto = toDTO(post);
         if (user != null) {
             dto.setUsername(user.getUsername());

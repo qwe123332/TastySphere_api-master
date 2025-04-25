@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.PostDTO;
+import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.dto.mapper.PostDtoMapper;
 import com.example.tastysphere_api.dto.response.CommonResponse;
 import com.example.tastysphere_api.enums.VisibilityEnum;
@@ -67,7 +68,7 @@ public class PostService {
 // 注入用户服务
 
     private PostDTO convertToDTO(Post post) {
-        User user = userService.getUserById(post.getUserId()); // 查询用户
+        UserDTO user = userService.getUserById(post.getUserId()); // 查询用户
         return postDtoMapper.toDTOWithUserAndContext(post, user, null, null);
     }
 
@@ -243,10 +244,10 @@ public class PostService {
         postMapper.deleteById(postId);
     }
 
-    public IPage<PostDTO> getPosts(User user, int page, int size) {
+    public IPage<PostDTO> getPosts( int page, int size) {
         IPage<Post> mpPage = new Page<>(page, size);
         LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Post::getUserId, user.getId());
+        wrapper.eq(Post::getAudited, true).eq(Post::getApproved, true);
         IPage<Post> postPage = postMapper.selectPage(mpPage, wrapper);
         return postPage.convert(this::convertToDTO);
     }

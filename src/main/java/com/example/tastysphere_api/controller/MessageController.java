@@ -5,23 +5,27 @@ import com.example.tastysphere_api.dto.CustomUserDetails;
 import com.example.tastysphere_api.dto.request.MessageRequest;
 import com.example.tastysphere_api.entity.PrivateMessage;
 import com.example.tastysphere_api.service.MessageService;
-import com.example.tastysphere_api.util.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/messages")
 public class MessageController {
 
-    @Autowired
-    private MessageService messageService;
+    private final MessageService messageService;
 
-    // 发送消息
+    @Autowired
+    public MessageController(MessageService messageService) {
+        this.messageService = messageService;
+    }
+
+    /**
+     * Send a message to another user
+     */
     @PostMapping("/send")
     public ResponseEntity<Void> sendMessage(
             @RequestBody MessageRequest request,
@@ -35,8 +39,9 @@ public class MessageController {
         return ResponseEntity.ok().build();
     }
 
-
-    // 获取与指定用户的对话内容（分页）
+    /**
+     * Get conversation with a specific user (paginated)
+     */
     @GetMapping("/conversation/{userId}")
     public ResponseEntity<List<PrivateMessage>> getConversation(
             @PathVariable Long userId,
@@ -49,13 +54,19 @@ public class MessageController {
         return ResponseEntity.ok(messages);
     }
 
-    // 获取当前用户的未读消息数
-    @GetMapping("/unread-count")
+    /**
+     * Get total unread message count for current user
+     */
+    @GetMapping("/unread")
     public ResponseEntity<Integer> getUnreadCount(
             @AuthenticationPrincipal CustomUserDetails user) {
         int count = messageService.getUnreadCount(user.getUser().getId());
         return ResponseEntity.ok(count);
     }
+
+    /**
+     * Delete entire conversation with a specific user
+     */
     @DeleteMapping("/conversations/{partnerId}")
     public ResponseEntity<Void> deleteConversation(
             @PathVariable Long partnerId,
@@ -64,22 +75,30 @@ public class MessageController {
         return ResponseEntity.ok().build();
     }
 
-    // 标记某条消息为已读
-    @PostMapping("/{messageId}/read")
+    /**
+     * Mark a specific message as read
+     */
+    @PostMapping("/read/{messageId}")
     public ResponseEntity<Void> markAsRead(
             @PathVariable Long messageId,
             @AuthenticationPrincipal CustomUserDetails user) {
         messageService.markAsRead(messageId, user.getUser().getId());
         return ResponseEntity.ok().build();
     }
-    // 聊天联系人列表（用于聊天列表页)
+
+    /**
+     * Get list of conversation previews for the chat list UI
+     */
     @GetMapping("/conversations")
     public ResponseEntity<List<ConversationPreview>> getConversations(
             @AuthenticationPrincipal CustomUserDetails user) {
-        Long userId = user.getUser().getId();
-        List<ConversationPreview> result = messageService.getConversationPreviews(userId);
-
+        List<ConversationPreview> result = messageService.getConversationPreviews(user.getUser().getId());
         return ResponseEntity.ok(result);
     }
-
+    @GetMapping("/unread-count")
+    public ResponseEntity<Integer> getUnread_Count(
+            @AuthenticationPrincipal CustomUserDetails user) {
+        int count = messageService.getUnreadCount(user.getUser().getId());
+        return ResponseEntity.ok(count);
+    }
 }
