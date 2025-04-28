@@ -202,4 +202,14 @@ public class UserService {
     public User getOne(QueryWrapper<User> queryWrapper) {
         return userMapper.selectOne(queryWrapper);
     }
+
+    public void updateByuserId(UserDTO user) {
+        User userEntity = userMapper.selectById(user.getId());
+        if (userEntity == null) {
+            throw new ResourceNotFoundException("User not found with id: " + user.getId());
+        }
+        if (user.getUsername() != null) userEntity.setUsername(user.getUsername());
+        if (user.getEmail() != null) userEntity.setEmail(user.getEmail());
+        userMapper.updateById(userEntity);
+    }
 }
