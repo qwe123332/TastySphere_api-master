@@ -12,6 +12,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,7 +44,7 @@ public class SecurityConfig {
 
         http
                 .cors(withDefaults())
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exceptions ->
                         exceptions.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session ->
@@ -53,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/login").permitAll()
                         .requestMatchers("/api/merchant/login").permitAll()
                         .requestMatchers("/ws/**").permitAll() // ✅ 放行 WebSocket 握手请求
-
+                        .requestMatchers("/api/upload/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll() // 允许未登录用户查看帖子
                         .requestMatchers(HttpMethod.GET, "/api/posts/{postId}").permitAll()

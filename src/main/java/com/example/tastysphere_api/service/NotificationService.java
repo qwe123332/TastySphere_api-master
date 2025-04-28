@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -95,5 +96,43 @@ public class NotificationService {
         IPage<Notification> notificationPage = new Page<>(page, size);
         return notificationMapper.selectPage(notificationPage, queryWrapper);
     }
+
+    public IPage<Notification> getAllNotifications(Page<Notification> objectPage) {
+        QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("created_at");
+        return notificationMapper.selectPage(objectPage, queryWrapper);
+
+    }
+
+    public Notification getNotificationById(Long id) {
+        return notificationMapper.selectById(id);
+    }
+    public void deleteNotification(Long id) {
+        notificationMapper.deleteById(id);
+    }
+    public void deleteNotifications(List<Long> ids) {
+        notificationMapper.deleteBatchIds(ids);
+    }
+    public void markNotificationsAsRead(List<Long> ids) {
+        for (Long id : ids) {
+            Notification notification = notificationMapper.selectById(id);
+            if (notification != null) {
+                notification.setRead(true);
+                notificationMapper.updateById(notification);
+            }
+        }
+    }
+    public void markNotificationsAsUnread(List<Long> ids) {
+        for (Long id : ids) {
+            Notification notification = notificationMapper.selectById(id);
+            if (notification != null) {
+                notification.setRead(false);
+                notificationMapper.updateById(notification);
+            }
+        }
+    }
+
+
+
 
 }

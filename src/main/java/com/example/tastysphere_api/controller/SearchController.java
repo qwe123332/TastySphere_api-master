@@ -31,17 +31,12 @@ public class SearchController {
             @RequestParam int page,
             @RequestParam int pageSize
     ) {
-        switch (type) {
-            case "posts":
-                return  postService.searchPosts(keyword, page, pageSize);
-            case "restaurants":
-                return restaurantService.searchRestaurants(keyword, page, pageSize);
-            case "users":
-                return userService.searchUsers(keyword, page, pageSize);
-            case "all":
-            default:
-                return mixedSearch(keyword, page, pageSize);
-        }
+        return switch (type) {
+            case "posts" -> postService.searchPosts(keyword, page, pageSize);
+            case "restaurants" -> restaurantService.searchRestaurants(keyword, page, pageSize);
+            case "users" -> userService.searchUsers(keyword, page, pageSize);
+            default -> mixedSearch(keyword, page, pageSize);
+        };
     }
 
 

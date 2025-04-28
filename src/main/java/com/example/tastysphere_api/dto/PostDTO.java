@@ -42,4 +42,11 @@ public class PostDTO {
     private Boolean approved = false;
 
     private String category; // 🔹 建议补充
+    private List<TagDTO> tags;
+    private List<Long> tagIds = new ArrayList<>();
+    @Data
+    public static class TagDTO {
+        private Long id;
+        private String name;
+    }
 }

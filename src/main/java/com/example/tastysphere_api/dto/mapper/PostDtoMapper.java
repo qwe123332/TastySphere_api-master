@@ -81,7 +81,7 @@ public interface PostDtoMapper {
             dto.setUserAvatar(user.getAvatar());
             System.out.println("User avatar: " + user.getAvatar());
         }
-        dto.setIsMine(currentUserId != null && post.getUserId().equals(currentUserId));
+        dto.setIsMine(post.getUserId().equals(currentUserId));
         dto.setIsLiked(likedPostIds != null && likedPostIds.contains(post.getId()));
         return dto;
     }

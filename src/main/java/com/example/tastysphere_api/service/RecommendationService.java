@@ -53,13 +53,12 @@ public class RecommendationService {
     private Set<String> getUserRecentCategories(Long userId) {
         String key = "user:categories:" + userId;
         Set<String> categories = redisTemplate.opsForZSet().range(key, 0, -1);
-        return categories != null ? categories : Set.of();
+        return categories;
     }
 
     private List<Long> getUserFollowingIds(Long userId) {
         String key = "user:following:" + userId;
         Set<String> rawIds = redisTemplate.opsForSet().members(key);
-        if (rawIds == null) return List.of();
 
         return rawIds.stream()
                 .map(id -> {
@@ -77,7 +76,7 @@ public class RecommendationService {
     private List<Post> getTrendingPosts() {
         String key = "trending:posts";
         Set<String> postIds = redisTemplate.opsForZSet().reverseRange(key, 0, 9);
-        if (postIds == null || postIds.isEmpty()) return List.of();
+        if (postIds.isEmpty()) return List.of();
 
         return postIds.stream()
                 .map(id -> {

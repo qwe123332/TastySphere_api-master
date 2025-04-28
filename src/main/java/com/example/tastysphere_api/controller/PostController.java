@@ -33,9 +33,11 @@ public class PostController {
     public ResponseEntity<IPage<PostDTO>> getPosts(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long tagId,
             @AuthenticationPrincipal CustomUserDetails user) {
-        return ResponseEntity.ok(postService.getPosts(page, size));
+        return ResponseEntity.ok(postService.getPosts(page, size, tagId));
     }
+
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<IPage<PostDTO>> getPostsByUser(
@@ -49,7 +51,7 @@ public class PostController {
     public ResponseEntity<PostDTO> getPost(
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomUserDetails user) {
-        PostDTO postDTO = postService.getPost(postId);
+        PostDTO postDTO =postService.getPosts(postId);
         if (user != null) {
             recommendationService.recordUserView(user.getUserId(), postDTO);
         }
@@ -70,7 +72,8 @@ public class PostController {
     public ResponseEntity<PostDTO> updatePost(
             @PathVariable Long postId,
             @Valid @RequestBody PostDTO postDTO,
-            @AuthenticationPrincipal CustomUserDetails user) {
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
         return ResponseEntity.ok(postService.updatePost(postId, postDTO, user.getUser()));
     }
 

@@ -48,11 +48,11 @@ public class AdminAuthController {
     public ResponseEntity<?> login(@RequestBody UserLoginRequest loginRequest) {
         try {
             System.out.println("Admin login attempt: " + loginRequest.getEmail() + ", " + loginRequest.getPassword());
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getEmail(),
                             loginRequest.getPassword()
-
                     )
             );
 
@@ -65,8 +65,19 @@ public class AdminAuthController {
             }
 
             String token = tokenProvider.generateToken(authentication.getName(), roles);
-            Map<String, String> response = new HashMap<>();
+
+            // 构建用户信息返回
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", userDetails.getUserId());
+            userInfo.put("username", userDetails.getUsername());
+            userInfo.put("email", userDetails.getUser().getEmail());
+            userInfo.put("roles", roles.stream().map(Role::getName).toList());
+
+            // 总响应
+            Map<String, Object> response = new HashMap<>();
             response.put("token", token);
+            response.put("user", userInfo);
+
             return ResponseEntity.ok(response);
 
         } catch (AuthenticationException ex) {

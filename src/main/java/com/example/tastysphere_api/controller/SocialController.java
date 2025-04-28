@@ -50,7 +50,7 @@ public class SocialController {
         // 频率限制检查
         String key = "comment_limit:" + user.getUser().getId();
         String count = redisTemplate.opsForValue().get(key);
-        if (count != null && Integer.parseInt(count) >= 10) {
+        if (Integer.parseInt(count) >= 10) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "评论次数超过限制，请稍后再试");
         }
 

@@ -32,26 +32,32 @@ import java.util.Map;
 @Slf4j
 public class AdminService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+    private final PostMapper postMapper;
+    private final AuditLogMapper auditLogMapper;
+    private final NotificationService notificationService;
+    private final PostReportMapper postReportMapper;
 
-    @Autowired
-    private PostMapper postMapper;
+    public AdminService(UserMapper userMapper, PostMapper postMapper, AuditLogMapper auditLogMapper,
+                        NotificationService notificationService, PostReportMapper postReportMapper) {
+        this.userMapper = userMapper;
+        this.postMapper = postMapper;
+        this.auditLogMapper = auditLogMapper;
+        this.notificationService = notificationService;
+        this.postReportMapper = postReportMapper;
+    }
 
-    @Autowired
-    private AuditLogMapper auditLogMapper;
-
-    @Autowired
-    private NotificationService notificationService;
-    @Autowired
-    private PostReportMapper postReportMapper;
-
-    /** 获取所有审计日志 */
+    /**
+     * 获取所有审计日志
+     */
     public IPage<AuditLog> getAuditLogs(Page<AuditLog> page) {
         // 使用MyBatis Plus的selectPage方法[2,7](@ref)
         return auditLogMapper.selectPage(page, null);
     }
-    /** 系统总览统计 */
+
+    /**
+     * 系统总览统计
+     */
     public Map<String, Object> getSystemStatistics() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalUsers", userMapper.selectCount(null));
@@ -60,7 +66,9 @@ public class AdminService {
         return stats;
     }
 
-    /** 系统详细统计（含今日新增） */
+    /**
+     * 系统详细统计（含今日新增）
+     */
     public Map<String, Object> getDetailedStatistics() {
         Map<String, Object> stats = new HashMap<>();
         LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0);
@@ -129,7 +137,9 @@ public class AdminService {
     }
 
 
-    /** 更新用户状态（封禁/解封） */
+    /**
+     * 更新用户状态（封禁/解封）
+     */
     @Transactional(rollbackFor = Exception.class)
     public void updateUserStatus(Long userId, boolean active) {
         User user = userMapper.selectById(userId);
@@ -155,7 +165,9 @@ public class AdminService {
         }
     }
 
-    /** 获取待审核帖子分页 */
+    /**
+     * 获取待审核帖子分页
+     */
     public IPage<Post> getPendingPosts(long current, long size) {
         // MyBatis-Plus分页对象（页码从1开始）
         Page<Post> page = new Page<>(current, size);
@@ -167,7 +179,10 @@ public class AdminService {
         // 执行分页查询
         return postMapper.selectPage(page, wrapper);
     }
-    /** 获取系统运行资源指标 */
+
+    /**
+     * 获取系统运行资源指标
+     */
     public Map<String, Object> getSystemMetrics() {
         try {
             Map<String, Object> metrics = new HashMap<>();
@@ -231,7 +246,6 @@ public class AdminService {
             throw new BusinessException("审核操作失败: " + e.getMessage());
         }
     }
-
 
 
     public IPage<AuditLog> getAuditLogs(int page, int size) {

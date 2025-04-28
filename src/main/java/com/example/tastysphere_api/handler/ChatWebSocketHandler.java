@@ -75,12 +75,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             String  senderRaw=msg.getString("to");
             Long senderId = Long.valueOf(resolveUserId(senderRaw)); // 对方
 
-            if (receiverId != null && senderId != null) {
-                messageService.markConversationAsRead(receiverId, senderId);
-                System.out.println("WebSocket: 已将对话标记为已读 -> from: " + senderId + " to: " + receiverId);
-            } else {
-                System.out.println("MARK_READ 参数解析失败");
-            }
+            messageService.markConversationAsRead(receiverId, senderId);
+            System.out.println("WebSocket: 已将对话标记为已读 -> from: " + senderId + " to: " + receiverId);
             return;
         }
 

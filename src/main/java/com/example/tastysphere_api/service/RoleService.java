@@ -47,7 +47,7 @@ public class RoleService {
         // 插入新关系（注意使用 Long 类型）
         List<RolePermission> rolePermissions = permissions.stream()
                 .map(p -> new RolePermission(role.getId(), p.getId())) // ✅ 修正这里
-                .collect(Collectors.toList());
+                .toList();
 
         for (RolePermission rp : rolePermissions) {
             rolePermissionMapper.insert(rp);

@@ -12,7 +12,7 @@ public interface PrivateMessageMapper extends BaseMapper<PrivateMessage> {
 
     // 获取某两个用户之间的对话（分页）
     @Select("""
-        SELECT * FROM private_message 
+        SELECT * FROM private_message
         WHERE (sender_id = #{userId1} AND receiver_id = #{userId2})
            OR (sender_id = #{userId2} AND receiver_id = #{userId1})
         ORDER BY timestamp DESC
@@ -22,14 +22,14 @@ public interface PrivateMessageMapper extends BaseMapper<PrivateMessage> {
 
     // 获取某个用户的未读消息数
     @Select("""
-        SELECT COUNT(*) FROM private_message 
+        SELECT COUNT(*) FROM private_message
         WHERE receiver_id = #{receiverId} AND is_read = FALSE
     """)
     Integer countUnreadMessages(Long receiverId);
 
     // 标记某条消息为已读
     @Update("""
-        UPDATE private_message 
+        UPDATE private_message
         SET is_read = TRUE 
         WHERE id = #{messageId} AND receiver_id = #{receiverId}
     """)
@@ -37,7 +37,7 @@ public interface PrivateMessageMapper extends BaseMapper<PrivateMessage> {
 
     // 所有有过会话的用户 ID（发送或接收）
     @Select("""
-    SELECT DISTINCT 
+    SELECT DISTINCT
         CASE 
             WHEN sender_id = #{userId} THEN receiver_id 
             ELSE sender_id 
@@ -50,9 +50,9 @@ public interface PrivateMessageMapper extends BaseMapper<PrivateMessage> {
     // 最近一条消息
     @Select("""
     SELECT * FROM private_message
-    WHERE 
+    WHERE
       (sender_id = #{user1} AND receiver_id = #{user2})
-      OR 
+      OR
       (sender_id = #{user2} AND receiver_id = #{user1})
     ORDER BY timestamp DESC LIMIT 1
     """)
@@ -82,7 +82,7 @@ public interface PrivateMessageMapper extends BaseMapper<PrivateMessage> {
         m.content AS lastMessage,
         m.timestamp AS lastTime,
         (
-            SELECT COUNT(*) 
+            SELECT COUNT(*)
             FROM private_message pm
             WHERE pm.sender_id = u.user_id AND pm.receiver_id = #{currentUserId} AND pm.is_read = false
         ) AS unreadCount

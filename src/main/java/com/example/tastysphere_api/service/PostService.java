@@ -1,25 +1,35 @@
 package com.example.tastysphere_api.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.tastysphere_api.dto.PostDTO;
 import com.example.tastysphere_api.dto.UserDTO;
 import com.example.tastysphere_api.dto.mapper.PostDtoMapper;
 import com.example.tastysphere_api.dto.response.CommonResponse;
+import com.example.tastysphere_api.entity.PostTag;
+import com.example.tastysphere_api.entity.Tag;
 import com.example.tastysphere_api.enums.VisibilityEnum;
 import com.example.tastysphere_api.mapper.PostMapper;
 import com.example.tastysphere_api.entity.Post;
 import com.example.tastysphere_api.entity.User;
 import com.example.tastysphere_api.exception.ResourceNotFoundException;
+import com.example.tastysphere_api.mapper.PostTagMapper;
+import com.example.tastysphere_api.mapper.TagMapper;
+import com.example.tastysphere_api.util.UrlUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.Utilities;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -32,8 +42,12 @@ public class PostService {
 
     @Autowired
     private PostDtoMapper postDtoMapper;
-    private final UserService userService;
 
+    private final UserService userService;
+    @Autowired
+    private  PostTagMapper postTagMapper;
+@Autowired
+    private TagMapper tagMapper;
     @Autowired
     public PostService(@Lazy UserService userService) {  // 添加 @Lazy 注解
         this.userService = userService;
@@ -53,18 +67,7 @@ public class PostService {
 
 
 
-    public PostDTO createPost(PostDTO postDTO, User user) {
-        Post post = new Post();
-        post.setUserId(user.getId());
-        post.setContent(sensitiveWordService.filterContent(postDTO.getContent()));
-        post.setVisibility(postDTO.getVisibility());
-        post.setImages(postDTO.getImages());
-        post.setAudited(false);
-        post.setApproved(false);
 
-        postMapper.insert(post);
-        return convertToDTO(post);
-    }
 // 注入用户服务
 
     private PostDTO convertToDTO(Post post) {
@@ -96,25 +99,7 @@ public class PostService {
 
 
 
-    public PostDTO updatePost(Long postId, PostDTO postDTO, User currentUser) {
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new ResourceNotFoundException("Post not found");
-        }
 
-        if (!post.getUserId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You don't have permission to update this post");
-        }
-
-        post.setContent(sensitiveWordService.filterContent(postDTO.getContent()));
-        post.setVisibility(postDTO.getVisibility());
-        post.setImages(postDTO.getImages());
-        post.setAudited(false);
-        post.setApproved(false);
-
-        postMapper.updateById(post);
-        return convertToDTO(post);
-    }
 
 
 
@@ -244,13 +229,19 @@ public class PostService {
         postMapper.deleteById(postId);
     }
 
-    public IPage<PostDTO> getPosts( int page, int size) {
-        IPage<Post> mpPage = new Page<>(page, size);
-        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Post::getAudited, true).eq(Post::getApproved, true);
-        IPage<Post> postPage = postMapper.selectPage(mpPage, wrapper);
+    public IPage<PostDTO> getPosts(int page, int size, Long tagId) {
+        Page<Post> pageRequest = new Page<>(page, size);
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+        if (tagId != null) {
+            queryWrapper.inSql(Post::getId,
+                    "SELECT post_id FROM post_tag WHERE tag_id = " + tagId);
+        }
+        queryWrapper.orderByDesc(Post::getCreatedTime);
+
+        IPage<Post> postPage = postMapper.selectPage(pageRequest, queryWrapper);
         return postPage.convert(this::convertToDTO);
     }
+
 
     public IPage<PostDTO> getPostsByUser(Long userId, int page, int size) {
         IPage<Post> mpPage = new Page<>(page, size);
@@ -260,13 +251,6 @@ public class PostService {
         return postPage.convert(this::convertToDTO);
     }
 
-    public PostDTO getPostById(Long id) {
-        Post post = postMapper.selectById(id);
-        if (post == null) {
-            throw new ResourceNotFoundException("Post not found with id: " + id);
-        }
-        return convertToDTO(post);
-    }
 
     public IPage<PostDTO> getAllPosts(IPage<Post> objectPage, String search) {
         LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
@@ -280,6 +264,149 @@ public class PostService {
 
 
     // ... 其余原有方法不动（略） ...
+// 1. 修改createPost方法
+    @Transactional
+    public PostDTO createPost(PostDTO postDTO, User user) {
+        Post post = new Post();
+        BeanUtils.copyProperties(postDTO, post);
+        post.setUserId(user.getId());
+        post.setImages(postDTO.getImages()); // 添加封面图
+        postMapper.insert(post);
+
+        // 处理标签 - 现在接收的是tagIds列表
+        if (postDTO.getTagIds() != null && !postDTO.getTagIds().isEmpty()) {
+            List<PostTag> postTags = postDTO.getTagIds().stream()
+                    .map(tagId -> {
+                        PostTag pt = new PostTag();
+                        pt.setPostId(post.getId());
+                        pt.setTagId(tagId);
+                        return pt;
+                    }).collect(Collectors.toList());
+            postTagMapper.batchInsert(postTags);
+        }
+
+        // 返回包含完整信息的DTO
+        return getPostById(post.getId());
+    }
+
+    // 2. 修改updatePost方法
+    public PostDTO updatePost(Long postId, PostDTO postDTO, User currentUser) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new ResourceNotFoundException("Post not found");
+        }
+
+        if (!post.getUserId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You don't have permission to update this post");
+        }
+
+        // 更新字段
+        post.setTitle(postDTO.getTitle());
+        post.setContent(sensitiveWordService.filterContent(postDTO.getContent()));
+        post.setVisibility(postDTO.getVisibility());
+        post.setImages(postDTO.getImages());
+        post.setAudited(false);
+        post.setApproved(false);
+
+        // 更新标签关联
+        updatePostTags(postId, postDTO.getTagIds());
+
+        postMapper.updateById(post);
+        return getPostById(postId);
+    }
+
+    // 3. 添加更新标签关联的辅助方法
+    private void updatePostTags(Long postId, List<Long> tagIds) {
+        // 删除原有标签关联
+        postTagMapper.delete(new QueryWrapper<PostTag>().eq("post_id", postId));
+
+        // 添加新标签关联
+        if (tagIds != null && !tagIds.isEmpty()) {
+            List<PostTag> postTags = tagIds.stream()
+                    .map(tagId -> {
+                        PostTag pt = new PostTag();
+                        pt.setPostId(postId);
+                        pt.setTagId(tagId);
+                        return pt;
+                    }).collect(Collectors.toList());
+            postTagMapper.batchInsert(postTags);
+        }
+    }
+
+    // 4. 修改getPostById方法
+    public PostDTO getPostById(Long postId) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new ResourceNotFoundException("Post not found with id: " + postId);
+        }
+
+        PostDTO postDTO = new PostDTO();
+        BeanUtils.copyProperties(post, postDTO);
+
+        // 查询并设置标签ID列表
+        List<Long> tagIds = postTagMapper.selectList(
+                        new QueryWrapper<PostTag>().eq("post_id", postId))
+                .stream()
+                .map(PostTag::getTagId)
+                .collect(Collectors.toList());
+        postDTO.setTagIds(tagIds);
+
+        // 查询完整的标签信息(可选)
+        if (!tagIds.isEmpty()) {
+            List<Tag> tags = tagMapper.selectBatchIds(tagIds);
+            List<PostDTO.TagDTO> tagDTOList = tags.stream().map(tag -> {
+                PostDTO.TagDTO tagDTO = new PostDTO.TagDTO();
+                tagDTO.setId(tag.getId());
+                tagDTO.setName(tag.getName());
+                return tagDTO;
+            }).collect(Collectors.toList());
+            postDTO.setTags(tagDTOList);
+        }
+
+        return postDTO;
+    }
 
 
+    public PostDTO getPosts(Long postId) {
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new ResourceNotFoundException("Post not found with id: " + postId);
+        }
+        List<PostTag> postTags = postTagMapper.selectList(new QueryWrapper<PostTag>().eq("post_id", postId));
+        List<Long> tagIds = postTags.stream().map(PostTag::getTagId).collect(Collectors.toList());
+        List<Tag> tags = tagMapper.selectBatchIds(tagIds);
+        List<PostDTO.TagDTO> tagDTOList = tags.stream().map(tag -> {
+            PostDTO.TagDTO tagDTO = new PostDTO.TagDTO();
+            tagDTO.setId(tag.getId());
+            tagDTO.setName(tag.getName());
+            return tagDTO;
+        }).collect(Collectors.toList());
+        PostDTO postDTO = new PostDTO();
+        BeanUtils.copyProperties(post, postDTO);
+        postDTO.setTags(tagDTOList);
+        postDTO.setTagIds(tagIds);
+        postDTO.setLikeCount(post.getLikeCount());
+        postDTO.setCommentCount(post.getCommentCount());
+        postDTO.setCreatedTime(post.getCreatedTime());
+        postDTO.setUpdatedTime(post.getUpdatedTime());
+        postDTO.setVisibility(post.getVisibility());
+        //图片
+        List<String> images = post.getImages().stream().map(image -> {
+            String s = UrlUtils.resolveImageUrl(image);
+            return s;
+        }).collect(Collectors.toList());
+        if (images != null && !images.isEmpty()) {
+            postDTO.setImages(images);
+        }
+        postDTO.setImages(images);
+
+        // 查询用户信息
+        UserDTO user = userService.getUserById(post.getUserId());
+        postDTO.setUserId(user.getId());
+        postDTO.setUsername(user.getUsername());
+        postDTO.setUserAvatar(user.getAvatar());
+
+        return postDTO;
+
+    }
 }

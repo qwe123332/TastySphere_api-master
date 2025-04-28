@@ -81,21 +81,10 @@ public class AdminController {
         adminService.reviewReport(id, request, admin.getUser().getId());
         return ResponseEntity.ok().build();
     }
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/notifications")
-    public ResponseEntity<Void> sendSystemNotification(@RequestBody NotificationRequest request) {
-        notificationService.sendSystemNotification(request);
-        return ResponseEntity.ok().build();
-    }
 
 
 
-//    @GetMapping("/users")
-//    public ResponseEntity<IPage<User>> getUsers(
-//            @RequestParam(defaultValue = "1") int page,
-//            @RequestParam(defaultValue = "10") int size) {
-//        return ResponseEntity.ok(adminService.getUsers(page, size));
-//    }
+
 
     @GetMapping("/audit-logs")
     public ResponseEntity<IPage<AuditLog>> getAuditLogs(
@@ -111,14 +100,6 @@ public class AdminController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String status) {
         return ResponseEntity.ok(adminService.getReports(page, size, status));
-    }
-
-    @GetMapping("/notifications")
-    public ResponseEntity<IPage<Notification>> getMyNotifications(
-            @AuthenticationPrincipal CustomUserDetails user,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(notificationService.getUserNotifications(user.getUser().getId(), page, size));
     }
 
 

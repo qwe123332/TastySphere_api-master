@@ -21,6 +21,8 @@ public class OrderDetail {
     @TableField("order_id")
     private Long orderId; // 替代 @ManyToOne
 
+    // 获取 ProductId
+    @Getter
     @TableField("product_id")
     private Long productId; // 替代 @ManyToOne
 
@@ -43,8 +45,4 @@ public class OrderDetail {
     @TableField(exist = false)
     private String productImageUrl;
 
-    // 获取 ProductId
-    public Long getProductId() {
-        return productId;
-    }
 }

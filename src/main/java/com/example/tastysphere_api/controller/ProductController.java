@@ -24,8 +24,7 @@ public class ProductController {
         Long merchantId = userDetails.getUser().getId();
 
 
-        List<Product> productsByMerchantId = productService.getProductsByMerchantId(merchantId);
-        return productsByMerchantId;
+        return productService.getProductsByMerchantId(merchantId);
     }
 
     // 2. 创建新商品
